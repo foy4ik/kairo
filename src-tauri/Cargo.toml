@@ -1,0 +1,39 @@
+[package]
+name = "kairo"
+version = "0.1.0"
+description = "Kairo — local-first desktop workspace for projects, tasks, notes and focus"
+edition = "2021"
+
+[features]
+default = ["desktop"]
+# The Tauri shell. Disable (`--no-default-features`) to test the pure domain/db/timer logic without a webview.
+desktop = ["dep:tauri", "dep:tauri-plugin-notification", "dep:tauri-plugin-opener", "dep:tauri-plugin-dialog"]
+
+[[bin]]
+name = "kairo"
+path = "src/main.rs"
+required-features = ["desktop"]
+
+[lib]
+name = "kairo_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"], optional = true }
+tauri-plugin-notification = { version = "2", optional = true }
+tauri-plugin-opener = { version = "2", optional = true }
+tauri-plugin-dialog = { version = "2", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.37", features = ["bundled"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
