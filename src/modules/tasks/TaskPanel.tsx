@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FileText, Play, Plus, Trash2, X } from 'lucide-react'
 import { SidePanel, ConfirmDialog } from '@/components/Modal'
@@ -58,6 +58,13 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
   const [save, setSave] = useState<SaveState>('saved')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const project = projects.find((p) => p.id === task.project_id)
+  // Edits are sent one at a time: each response carries the whole task, so out-of-order replies would show stale data.
+  const queue = useRef<Promise<unknown>>(Promise.resolve())
+  const serial = <T,>(fn: () => Promise<T>): Promise<T> => {
+    const next = queue.current.then(fn, fn)
+    queue.current = next.catch(() => undefined)
+    return next
+  }
 
   useEffect(() => { setTitle(task.title); setDescription(task.description) }, [task.title, task.description])
   useEffect(() => { void projectsRepo.columns(task.project_id).then(setColumns) }, [task.project_id])
@@ -65,7 +72,7 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
 
   const commit = async (patch: TaskPatch) => {
     setSave('saving')
-    const saved = await attempt(() => tasksRepo.update(task.id, patch))
+    const saved = await serial(() => attempt(() => tasksRepo.update(task.id, patch)))
     if (saved) { useData.getState().upsertTask(saved); setSave('saved') } else setSave('error')
   }
   const replace = (updated: Task | undefined) => {
@@ -182,16 +189,16 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
             <li key={s.id} className="group flex items-center gap-2 rounded px-1 py-1 hover:bg-surface-2">
               <input
                 type="checkbox" checked={s.completed} aria-label={s.title} className="h-4 w-4 accent-[var(--c-accent)]"
-                onChange={async () => replace(await attempt(() => tasksRepo.updateSubtask(s.id, { completed: !s.completed })))}
+                onChange={async () => replace(await serial(() => attempt(() => tasksRepo.updateSubtask(s.id, { completed: !s.completed }))))}
               />
               <span className={cn('flex-1 text-sm', s.completed && 'text-muted line-through')}>{s.title}</span>
-              <IconButton label={t('common.delete')} className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={async () => replace(await attempt(() => tasksRepo.removeSubtask(s.id)))}>
+              <IconButton label={t('common.delete')} className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={async () => replace(await serial(() => attempt(() => tasksRepo.removeSubtask(s.id))))}>
                 <X size={14} />
               </IconButton>
             </li>
           ))}
         </ul>
-        <form className="mt-2 flex gap-2" onSubmit={async (e) => { e.preventDefault(); const v = checkInput.trim(); if (!v) return; setCheckInput(''); replace(await attempt(() => tasksRepo.addSubtask(task.id, v))) }}>
+        <form className="mt-2 flex gap-2" onSubmit={async (e) => { e.preventDefault(); const v = checkInput.trim(); if (!v) return; setCheckInput(''); replace(await serial(() => attempt(() => tasksRepo.addSubtask(task.id, v)))) }}>
           <Input aria-label={t('task.addChecklist')} placeholder={t('task.addChecklist')} value={checkInput} onChange={(e) => setCheckInput(e.target.value)} />
           <Button type="submit" disabled={!checkInput.trim()}><Plus size={14} />{t('common.add')}</Button>
         </form>

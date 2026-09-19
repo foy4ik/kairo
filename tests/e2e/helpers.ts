@@ -14,7 +14,7 @@ export async function freshApp(page: Page, opts: { onboarded?: boolean; lang?: '
     [onboarded, lang, theme] as const,
   )
   await page.goto('/')
-  await expect(page.getByRole('navigation', { name: /Основная навигация|Main navigation/ }).first()).toBeVisible()
+  await expect(page.getByRole('navigation', { name: /Основная навигация|Main navigation/ }).first()).toBeVisible({ timeout: 30_000 }) // cold dev-server compile can be slow under load
 }
 
 export async function createProject(page: Page, name: string) {
