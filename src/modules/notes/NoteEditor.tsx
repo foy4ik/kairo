@@ -125,7 +125,11 @@ export function NoteEditor({ note, onDeleted }: { note: Note; onDeleted: () => v
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line px-6 py-2 text-sm">
         <label className="flex items-center gap-2 text-xs text-muted">
           {t('note.project')}
-          <Select value={form.project_id ?? ''} className="h-7 w-44" onChange={(e) => change({ project_id: e.target.value ? Number(e.target.value) : null, task_ids: [] })}>
+          <Select value={form.project_id ?? ''} className="h-7 w-44" onChange={(e) => {
+            const project_id = e.target.value ? Number(e.target.value) : null
+            // Keep only links that still make sense inside the new project.
+            change({ project_id, task_ids: project_id === null ? form.task_ids : form.task_ids.filter((id) => allTasks.find((x) => x.id === id)?.project_id === project_id) })
+          }}>
             <option value="">{t('note.noProject')}</option>
             {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </Select>

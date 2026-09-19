@@ -5,6 +5,11 @@
 
 > Tauri 2 · Rust · SQLite · React 18 · TypeScript · Tailwind · Zustand · dnd-kit · Recharts
 
+![Dashboard](docs/screenshots/01-dashboard.png)
+![Board and task panel](docs/screenshots/02-board.png)
+
+More: [notes](docs/screenshots/03-notes.png) · [focus](docs/screenshots/04-focus.png) · [analytics](docs/screenshots/05-analytics.png) · [command palette](docs/screenshots/09-command-palette.png) · [light theme](docs/screenshots/07-board-light.png) · [settings](docs/screenshots/08-settings.png). Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+
 ## What it does
 
 | Area | Highlights |
@@ -70,6 +75,7 @@ scripts\tauri.ps1 build --bundles nsis     # sets PATH and CARGO_TARGET_DIR=C:\k
 npm test                                   # Vitest: quick-add parser, markdown helpers, utils, i18n
 cargo test --no-default-features           # Rust: repositories on in-memory SQLite, move_task, import/export round-trip, timer, analytics
 npm run e2e                                # Playwright: the critical scenarios below
+npm run smoke:native                       # real desktop build over WebView2/CDP: IPC, timer, DB, export/import
 ```
 
 E2E scenarios: project → task → In Progress → Done (real pointer drag) · reorder persistence · focus session → history → analytics (fake clock) · note ↔ task link surviving a reload · export → reset → import · invalid backup rejected · onboarding → demo workspace · RU/EN + theme switch without reload · command palette by keyboard only · Markdown sanitisation.

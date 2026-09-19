@@ -287,7 +287,7 @@ export const en: Record<keyof typeof ru, string> = {
 
   // command palette & search
   'palette.title': 'Command palette',
-  'palette.open': 'Search & commands',
+  'palette.open': 'Search…',
   'palette.placeholder': 'Type a command or a query…',
   'palette.searchPlaceholder': 'Find a task, note or project…',
   'palette.actions': 'Actions',

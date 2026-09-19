@@ -5,4 +5,4 @@ if (Test-Path $mingw) { $env:Path = "$mingw;$env:Path" }
 $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
 if (-not $env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR = "C:\kairo-target" }
 Set-Location (Join-Path $PSScriptRoot "..")
-npx tauri $args
+npm run tauri -- @args

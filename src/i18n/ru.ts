@@ -285,7 +285,7 @@ export const ru = {
 
   // command palette & search
   'palette.title': 'Командная палитра',
-  'palette.open': 'Поиск и команды',
+  'palette.open': 'Поиск…',
   'palette.placeholder': 'Введите команду или запрос…',
   'palette.searchPlaceholder': 'Найти задачу, заметку или проект…',
   'palette.actions': 'Действия',

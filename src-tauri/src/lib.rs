@@ -34,9 +34,17 @@ pub fn run() {
             app.manage(db);
             tray::setup(app.handle(), &lang)?;
             runtime::spawn_ticker(app.handle().clone());
-            if let Some(w) = app.get_webview_window("main") {
-                let _ = w.show();
-            }
+            // The window starts hidden and the UI shows it after its first frame (no white flash).
+            // This watchdog guarantees the window appears even if the frontend fails to start.
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_secs(5));
+                if let Some(w) = handle.get_webview_window("main") {
+                    if !w.is_visible().unwrap_or(true) {
+                        let _ = w.show();
+                    }
+                }
+            });
             Ok(())
         })
         .on_window_event(|window, event| {
