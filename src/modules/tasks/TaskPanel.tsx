@@ -189,7 +189,12 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
             <li key={s.id} className="group flex items-center gap-2 rounded px-1 py-1 hover:bg-surface-2">
               <input
                 type="checkbox" checked={s.completed} aria-label={s.title} className="h-4 w-4 accent-[var(--c-accent)]"
-                onChange={async () => replace(await serial(() => attempt(() => tasksRepo.updateSubtask(s.id, { completed: !s.completed }))))}
+                onChange={async () => {
+                  // Optimistic: the checkbox flips at once; the backend answer (or a refresh on failure) is authoritative.
+                  replace({ ...task, subtasks: task.subtasks.map((x) => (x.id === s.id ? { ...x, completed: !s.completed } : x)) })
+                  const saved = await serial(() => attempt(() => tasksRepo.updateSubtask(s.id, { completed: !s.completed })))
+                  if (saved) replace(saved); else void useData.getState().refreshTasks()
+                }}
               />
               <span className={cn('flex-1 text-sm', s.completed && 'text-muted line-through')}>{s.title}</span>
               <IconButton label={t('common.delete')} className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={async () => replace(await serial(() => attempt(() => tasksRepo.removeSubtask(s.id))))}>
