@@ -110,6 +110,8 @@ test.describe('Focus and analytics', () => {
     await page.clock.fastForward(120_000)
     await expect(page.getByTestId('timer-display')).toHaveText('24:00')
     await page.keyboard.press('Space')
+    // Resume is asynchronous: let it land before moving the fake clock, or the jump happens while still paused.
+    await expect(page.getByRole('button', { name: 'Пауза Space' })).toBeVisible()
     await page.clock.fastForward(24 * 60_000 + 1000)
     await expect(page.getByText('Сессия завершена').first()).toBeVisible()
 
