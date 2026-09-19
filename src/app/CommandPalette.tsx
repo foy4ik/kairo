@@ -115,7 +115,7 @@ export function CommandPalette() {
         <div className="flex items-center gap-2.5 border-b border-line px-4">
           <Search size={16} className="text-muted" aria-hidden />
           <input
-            ref={input} value={query} onChange={(e) => setQuery(e.target.value)} role="combobox" aria-expanded aria-controls="palette-list" aria-activedescendant={items[active] ? `palette-${items[active].id}` : undefined}
+            ref={input} autoFocus value={query} onChange={(e) => setQuery(e.target.value)} role="combobox" aria-expanded aria-controls="palette-list" aria-activedescendant={items[active] ? `palette-${items[active].id}` : undefined}
             aria-label={t('palette.title')} placeholder={mode === 'search' ? t('palette.searchPlaceholder') : t('palette.placeholder')}
             className="h-12 flex-1 bg-transparent text-[15px] text-fg placeholder:text-muted focus:outline-none"
           />

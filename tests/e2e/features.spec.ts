@@ -207,6 +207,7 @@ test.describe('Language, theme and command palette', () => {
     await createProject(page, 'Palette target')
     await page.goto('/#/')
     await page.keyboard.press('Control+k')
+    await expect(page.getByRole('combobox', { name: 'Командная палитра' })).toBeFocused()
     const list = page.getByTestId('palette-list')
     await expect(list).toBeVisible()
     await page.keyboard.type('Palette')
@@ -215,6 +216,7 @@ test.describe('Language, theme and command palette', () => {
     await expect(page.getByRole('heading', { name: 'Palette target' })).toBeVisible()
 
     await page.keyboard.press('Control+k')
+    await expect(page.getByRole('combobox', { name: 'Командная палитра' })).toBeFocused()
     await page.keyboard.type('Создать задачу')
     await page.keyboard.press('Enter')
     await expect(page.getByRole('dialog', { name: 'Новая задача' })).toBeVisible()
@@ -223,6 +225,7 @@ test.describe('Language, theme and command palette', () => {
     await expect(page.getByTestId('task-card').filter({ hasText: 'Via palette' })).toBeVisible()
 
     await page.keyboard.press('Control+p')
+    await expect(page.getByRole('combobox', { name: 'Командная палитра' })).toBeFocused()
     await page.keyboard.type('palette')
     await expect(page.getByTestId('palette-list').getByRole('option', { name: /Via palette/ })).toBeVisible()
     await page.keyboard.press('Escape')
