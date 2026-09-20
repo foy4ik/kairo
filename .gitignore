@@ -7,3 +7,4 @@ test-results
 playwright-report
 release
 scripts/native-smoke.png
+scripts/native-update-dialog.png
