@@ -45,11 +45,21 @@ Measured on the development machine (Windows 11, WebView2), release build:
 | Cold start to first interactive screen (process launch → onboarding rendered, includes attaching the test harness) | ≈ 0.85–1.0 s |
 | Installer (NSIS, per-user) | 2.4 MB |
 | Application binary | 5.9 MB |
-| Main process working set at idle | ≈ 30 MB (plus WebView2 processes) |
+| Memory at idle (Rust process / WebView2 processes) | ≈ 6 MB / ≈ 195 MB, flat over 8 minutes |
+| 15-minute stress run (174 cycles: navigation, task panel, palette, data churn, timer, theme/language switches) | JS heap 9.2 → 11.0 MB, DOM nodes and listeners constant, Rust process flat, 0 console errors |
+| WCAG 2.1 A/AA audit (axe-core), 8 screens + dialogs, both themes | 0 violations; text contrast ≥ 4.6:1, control borders ≥ 3:1 |
 | Rust tests (repositories, move/reorder, import/export, analytics, timer) | 25 |
 | Unit tests (Vitest) | 26 |
-| End-to-end scenarios (Playwright) | 18 |
+| End-to-end scenarios (Playwright, incl. accessibility and auto-update) | 25 |
 | Native smoke checks against the real Rust backend | 17 |
+
+### Memory: how a false alarm was ruled out
+
+The first 15-minute stress run showed WebView2 memory growing ~4 MB/min while the JS heap stayed flat. A control run with no
+interaction stayed flat, so the instrumentation was not the cause. Isolating each action showed that engine memory ramps up
+under repeated navigation / re-rendering and then levels off: 15 000 consecutive route changes settle in a 164–181 MB band,
+theme/language switching and data churn plateau within a few batches, and DOM nodes, documents and listeners never change.
+The stress script therefore asserts on leak indicators (JS heap, DOM, listeners, Rust process) and only reports engine memory.
 
 ## What I would do next
 
