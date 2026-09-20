@@ -1,14 +1,31 @@
 # Kairo
 
+[![CI](https://github.com/foy4ik/kairo/actions/workflows/ci.yml/badge.svg)](https://github.com/foy4ik/kairo/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/foy4ik/kairo)](https://github.com/foy4ik/kairo/releases/latest)
+
 **Local-first desktop workspace for projects, tasks, notes and focus.**
 `Plan → Focus → Work → Capture → Review` in one offline app: no account, no server, your data stays in a local SQLite file.
 
 > Tauri 2 · Rust · SQLite · React 18 · TypeScript · Tailwind · Zustand · dnd-kit · Recharts
 
-![Dashboard](docs/screenshots/01-dashboard.png)
-![Board and task panel](docs/screenshots/02-board.png)
+[![Kairo dashboard – click to watch the 50-second demo](docs/screenshots/01-dashboard.png)](docs/demo/kairo-demo.mp4)
 
-More: [notes](docs/screenshots/03-notes.png) · [focus](docs/screenshots/04-focus.png) · [analytics](docs/screenshots/05-analytics.png) · [command palette](docs/screenshots/09-command-palette.png) · [light theme](docs/screenshots/07-board-light.png) · [settings](docs/screenshots/08-settings.png). Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+▶ **[Watch the 50-second demo](docs/demo/kairo-demo.mp4)** — project → task by hotkey → drag & drop → linked note → focus session → analytics → command palette → export / auto-update.
+
+| | |
+|---|---|
+| ![Board and task panel](docs/screenshots/02-board.png) | ![Markdown notes](docs/screenshots/03-notes.png) |
+| ![Focus timer](docs/screenshots/04-focus.png) | ![Analytics](docs/screenshots/05-analytics.png) |
+
+More: [command palette](docs/screenshots/09-command-palette.png) · [light theme](docs/screenshots/06-dashboard-light.png) · [light board](docs/screenshots/07-board-light.png) · [settings](docs/screenshots/08-settings.png). All screenshots are taken from the real desktop build. Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+
+## Download
+
+Installers for Windows (`.exe`), macOS (Apple Silicon `.dmg`) and Linux (`.AppImage`, `.deb`) are attached to every
+[GitHub release](https://github.com/foy4ik/kairo/releases/latest). They are not code-signed with a paid Microsoft/Apple
+certificate, so the first launch shows a SmartScreen / Gatekeeper warning ("More info → Run anyway").
+After the first install the app **updates itself**: it asks, then downloads a signature-verified package
+([details](docs/RELEASING.md)).
 
 ## What it does
 
@@ -21,7 +38,7 @@ More: [notes](docs/screenshots/03-notes.png) · [focus](docs/screenshots/04-focu
 | **Analytics** | Day / week / custom period, completed tasks, sessions, focus time, per-project and per-tag breakdown, streak |
 | **Files** | Links to local files and folders (paths only), open in the system app / reveal in folder, clear "file moved" state |
 | **Data** | JSON export / import with schema validation and automatic safety copy, SQLite backup, reset, demo data |
-| **Updates** | Signed auto-update from GitHub Releases: the app asks first, downloads with progress, verifies the signature and restarts; can be switched off ([how releases work](docs/RELEASING.md)) |
+| **Updates** | Signed auto-update from GitHub Releases: the app asks first, downloads with progress, verifies the signature and restarts; can be switched off |
 | **Desktop UX** | Command palette (`Ctrl+K`), quick open (`Ctrl+P`), keyboard-first, RU / EN without restart, Light / Dark / System theme |
 
 Keyboard: `Ctrl+K` palette · `Ctrl+P` search · `N` new task · `Ctrl+Enter` save/confirm · `Esc` close · `Space` pause/resume timer · `Ctrl+1…6` navigation.
@@ -38,7 +55,7 @@ React UI  →  modules/* (feature layer)  →  lib/repositories  →  lib/ipc  �
 * **The timer lives in Rust** (`services/timer.rs`, a pure state machine with an injected clock, unit-tested). A ticker thread emits `timer-state` events and updates the tray, so a session keeps running with the window hidden; closing the window during a session hides it to the tray.
 * **Typed IPC contract.** Every command returns a structured `AppError { code, message }`; the UI maps codes to human-language messages with a next step.
 * **Import is all-or-nothing.** The backup is validated structurally first, then imported in one transaction with foreign-key verification; the previous data is exported to `<app data>/backups` beforehand.
-* **Security.** Markdown is sanitised, raw HTML and remote images are not rendered, links open only through the system browser and only for `http(s)` / `mailto`. File paths never leave the machine. CSP is locked to `self`.
+* **Security.** Markdown is sanitised, raw HTML and remote images are not rendered, links open only through the system browser and only for `http(s)` / `mailto`. File paths never leave the machine. CSP is locked to `self`. Updates are verified against an embedded public key.
 * **Browser fallback.** `lib/ipc/mock.ts` implements the same command contract in memory, so the UI can be developed and end-to-end tested in a plain browser.
 
 ```
@@ -73,22 +90,30 @@ scripts\tauri.ps1 build --bundles nsis     # sets PATH and CARGO_TARGET_DIR=C:\k
 ## Tests
 
 ```bash
-npm test                                   # Vitest: quick-add parser, markdown helpers, utils, i18n
-cargo test --no-default-features           # Rust: repositories on in-memory SQLite, move_task, import/export round-trip, timer, analytics
-npm run e2e                                # Playwright: the critical scenarios below
-npm run smoke:native                       # real desktop build over WebView2/CDP: IPC, timer, DB, export/import
+npm test                                   # Vitest (26): quick-add parser, markdown helpers, utils, i18n plurals + key parity
+npm run test:rust                          # Rust (25): repositories on in-memory SQLite, move_task, import/export round-trip, timer, analytics
+npm run e2e                                # Playwright (25): the scenarios below, incl. a WCAG audit and the auto-update flow
+npm run smoke:native                       # real desktop build over WebView2/CDP: IPC, timer, DB, export/import (17 checks)
 node scripts/soak.mjs 15                   # 15-minute stability run of the desktop build: memory, DOM, listeners, console errors
 ```
 
-Accessibility: an axe-core WCAG 2.1 A/AA audit of every screen in both themes runs in the E2E suite; text contrast is 4.6:1 or better and form-control borders meet 3:1.
+E2E scenarios: project → task → In Progress → Done (real pointer drag) · reorder persistence · focus session → history → analytics (fake clock) · note ↔ task link surviving a reload · export → reset → import · invalid backup rejected · onboarding → demo workspace · RU/EN + theme switch without reload · command palette by keyboard only · Markdown sanitisation · update offered, declined, installed, failing and disabled.
 
-E2E scenarios: project → task → In Progress → Done (real pointer drag) · reorder persistence · focus session → history → analytics (fake clock) · note ↔ task link surviving a reload · export → reset → import · invalid backup rejected · onboarding → demo workspace · RU/EN + theme switch without reload · command palette by keyboard only · Markdown sanitisation.
+Accessibility: an axe-core WCAG 2.1 A/AA audit of every screen in both themes runs in the E2E suite (0 violations); text contrast is 4.6:1 or better and form-control borders meet 3:1.
 
-`--no-default-features` builds the domain/db/timer core without the Tauri shell, so logic tests need no webview.
+`--no-default-features` builds the domain/db/timer core without the Tauri shell, so logic tests need no webview. CI runs all of this on Linux and builds the installers for Windows, macOS and Linux on every push.
+
+## Releasing
+
+```bash
+npm run release -- 0.1.2      # bump version, commit, tag, push → GitHub builds, signs and publishes
+```
+
+See [docs/RELEASING.md](docs/RELEASING.md) for how the update feed and the signing key work.
 
 ## Data
 
-The database lives in the OS app-data directory (`kairo.db`, WAL mode). Settings → *Data* shows the exact path. Exports are **plain, unencrypted** files and are labelled as such in the app.
+The database lives in the OS app-data directory (`kairo.db`, WAL mode). Settings → *Data* shows the exact path. Exports are **plain, unencrypted** files and are labelled as such in the app. Update checks contact GitHub only and send none of your data.
 
 ## Decisions worth knowing
 
@@ -96,3 +121,4 @@ The database lives in the OS app-data directory (`kairo.db`, WAL mode). Settings
 * Notes search uses SQL `LIKE` with escaped wildcards. That is instant for personal-scale data; FTS5 would be the next step for very large libraries.
 * Board columns are reordered from the column menu (accessible, no second drag context); cards use dnd-kit with pointer and keyboard sensors (`Space` to lift).
 * Analytics are computed in SQL per local calendar day: the UI sends its UTC offset, so "today" is the user's today.
+* The demo video and screenshots are produced by scripts (`scripts/demo-video.mjs`, `scripts/screenshots.mjs`), so they can be regenerated after any UI change.
