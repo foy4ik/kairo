@@ -20,16 +20,17 @@ export function useHotkeys() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey
-      const key = e.key.toLowerCase()
+      // Layout-independent: `e.key` is a Cyrillic letter on a Russian layout, `e.code` is the physical key.
+      const code = e.code
       const ui = useUi.getState()
 
-      if (mod && key === 'k') { e.preventDefault(); ui.palette ? ui.closePalette() : ui.openPalette('commands'); return }
-      if (mod && key === 'p') { e.preventDefault(); ui.openPalette('search'); return }
+      if (mod && code === 'KeyK') { e.preventDefault(); ui.palette ? ui.closePalette() : ui.openPalette('commands'); return }
+      if (mod && code === 'KeyP') { e.preventDefault(); ui.openPalette('search'); return }
       if (mod && /^[1-6]$/.test(e.key)) { e.preventDefault(); nav(NAV[Number(e.key) - 1]); return }
       if (mod || e.altKey || e.repeat) return
       if (ui.palette || modalOpen() || isEditable(e.target)) return
 
-      if (key === 'n') {
+      if (code === 'KeyN') {
         e.preventDefault()
         const m = loc.pathname.match(/^\/projects\/(\d+)/)
         ui.openNewTask({ projectId: m ? Number(m[1]) : undefined })

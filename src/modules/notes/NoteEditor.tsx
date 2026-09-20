@@ -63,9 +63,9 @@ export function NoteEditor({ note, onDeleted }: { note: Note; onDeleted: () => v
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (!(e.ctrlKey || e.metaKey)) return
-    if (e.key.toLowerCase() === 'b') { e.preventDefault(); format('bold') }
-    else if (e.key.toLowerCase() === 'i') { e.preventDefault(); format('italic') }
-    else if (e.key.toLowerCase() === 's') { e.preventDefault(); void flush() }
+    if (e.code === 'KeyB') { e.preventDefault(); format('bold') }
+    else if (e.code === 'KeyI') { e.preventDefault(); format('italic') }
+    else if (e.code === 'KeyS') { e.preventDefault(); void flush() }
   }
 
   // Keep the editor in sync when the note is changed elsewhere (e.g. a task link removed from the task panel).

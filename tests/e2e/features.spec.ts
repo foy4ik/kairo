@@ -234,6 +234,29 @@ test.describe('Language, theme and command palette', () => {
     await expect(page.getByTestId('palette-list')).toHaveCount(0)
   })
 
+  test('hotkeys work on a Russian keyboard layout, and the palette field has no focus frame', async ({ page }) => {
+    await freshApp(page)
+    await createProject(page, 'Layout')
+    await page.goto('/#/')
+    // On a Russian layout the physical K key produces "л": shortcuts must follow the key, not the letter.
+    const press = (key: string, code: string, ctrl = false) =>
+      page.evaluate(([k, c, m]) => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: k as string, code: c as string, ctrlKey: m as boolean, bubbles: true, cancelable: true })), [key, code, ctrl])
+    await press('л', 'KeyK', true)
+    const field = page.getByRole('combobox', { name: 'Командная палитра' })
+    await expect(field).toBeFocused()
+    // The global keyboard-focus outline must not draw a frame around the palette input.
+    expect(await field.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none')
+    await page.keyboard.press('Escape')
+    await expect(field).toHaveCount(0)
+
+    await press('з', 'KeyP', true) // Ctrl+P
+    await expect(field).toBeFocused()
+    await page.keyboard.press('Escape')
+
+    await press('т', 'KeyN') // N
+    await expect(page.getByRole('dialog', { name: 'Новая задача' })).toBeVisible()
+  })
+
   test('the sidebar and dashboard stay usable at the minimum window size', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 640 })
     await freshApp(page)
