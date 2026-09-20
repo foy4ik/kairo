@@ -51,7 +51,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM0MzI1RjVGNTJGQjI1NzYKUldSMkpmdFNYMTh5TkxEYzhIeHBUVnFBVjk1dmF5d1JRVml5dEgwYzg5NC8wcHVsMml6aTlpNTEK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlCQUVEMUM2QkRBQ0Y0QTUKUldTbDlLeTl4dEd1bTNBWkZ0SXRNZ0xvbzN2bzF1U09uK3JPbzNmOUR4YUIxeUVLK2pzOHY5N0kK",
       "endpoints": [
         "https://github.com/foy4ik/kairo/releases/latest/download/latest.json"
       ],

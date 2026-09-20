@@ -34,14 +34,23 @@ Write commit messages as if users read them: they become the "What's new" text i
 
 ## The signing key (important)
 
-Update packages are signed with a private key that is **not** in the repository:
+Update packages are signed with a private key that is **not** in the repository. It is protected by a password:
 
-* GitHub secret `TAURI_SIGNING_PRIVATE_KEY` (used by the release workflow),
-* a backup copy on the developer machine (`~/.tauri/kairo-updater.key`).
+* GitHub secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (used by the release workflow),
+* the developer machine keeps `~/.tauri/kairo-updater.key` (the key) and `~/.tauri/kairo-updater.password.txt` (its password).
 
-**If this key is lost, installed apps can no longer verify new updates and users must reinstall manually.**
-Keep an offline backup. To create a new pair: `npx tauri signer generate -w ~/.tauri/kairo-updater.key`, put the private
-key into the secret and the public key into `tauri.conf.json` (existing installs will not trust the new key).
+GitHub secrets cannot be read back, so these two local files are the only copy. **Back up both together in a password
+manager or an encrypted drive.** Without the key *and* its password, installed apps can no longer verify new updates and
+users must reinstall manually.
+
+To create a new pair (installed apps will not trust it, users reinstall once):
+
+```bash
+npx tauri signer generate -w ~/.tauri/kairo-updater.key -p "<new password>"
+```
+
+then put the public key (`.key.pub`) into `plugins.updater.pubkey` in `tauri.conf.json`, the private key into the
+`TAURI_SIGNING_PRIVATE_KEY` secret and the password into `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, and release a new version.
 
 ## Platforms
 
