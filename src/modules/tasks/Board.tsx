@@ -210,7 +210,7 @@ export function Board({ projectId }: { projectId: number }) {
           <option value="week">{t('filters.week')}</option>
           <option value="none">{t('filters.noDue')}</option>
         </Select>
-        <Select aria-label={t('task.priority')} className="w-44" value={filters.priority} onChange={(e) => set({ priority: e.target.value as Filters['priority'] })}>
+        <Select aria-label={t('task.priority')} className="w-48" value={filters.priority} onChange={(e) => set({ priority: e.target.value as Filters['priority'] })}>
           <option value="">{t('filters.anyPriority')}</option>
           {(['high', 'medium', 'low'] as Priority[]).map((p) => <option key={p} value={p}>{t(`priority.${p}`)}</option>)}
         </Select>

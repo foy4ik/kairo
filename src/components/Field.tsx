@@ -43,7 +43,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   ref,
 ) {
   return (
-    <select ref={ref} className={cn(control, fill(className), 'h-8 cursor-pointer pr-7', className)} {...rest}>
+    <select ref={ref} className={cn(control, fill(className), 'kselect h-8 cursor-pointer', className)} {...rest}>
       {children}
     </select>
   )
