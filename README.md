@@ -21,6 +21,7 @@ More: [notes](docs/screenshots/03-notes.png) · [focus](docs/screenshots/04-focu
 | **Analytics** | Day / week / custom period, completed tasks, sessions, focus time, per-project and per-tag breakdown, streak |
 | **Files** | Links to local files and folders (paths only), open in the system app / reveal in folder, clear "file moved" state |
 | **Data** | JSON export / import with schema validation and automatic safety copy, SQLite backup, reset, demo data |
+| **Updates** | Signed auto-update from GitHub Releases: the app asks first, downloads with progress, verifies the signature and restarts; can be switched off ([how releases work](docs/RELEASING.md)) |
 | **Desktop UX** | Command palette (`Ctrl+K`), quick open (`Ctrl+P`), keyboard-first, RU / EN without restart, Light / Dark / System theme |
 
 Keyboard: `Ctrl+K` palette · `Ctrl+P` search · `N` new task · `Ctrl+Enter` save/confirm · `Esc` close · `Space` pause/resume timer · `Ctrl+1…6` navigation.
