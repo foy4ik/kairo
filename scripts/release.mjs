@@ -46,7 +46,7 @@ edit('package.json', (s) => s.replace(/("version":\s*")[^"]+(")/, `$1${version}$
 edit('package-lock.json', (s) => s.replace(/("name":\s*"kairo",\s*"version":\s*")[^"]+(")/, `$1${version}$2`))
 edit('src-tauri/tauri.conf.json', (s) => s.replace(/("version":\s*")[^"]+(")/, `$1${version}$2`))
 edit('src-tauri/Cargo.toml', (s) => s.replace(/(\[package\][^[]*?\nversion\s*=\s*")[^"]+(")/, `$1${version}$2`))
-edit('src-tauri/Cargo.lock', (s) => s.replace(/(name = "kairo"\nversion = ")[^"]+(")/, `$1${version}$2`))
+edit('src-tauri/Cargo.lock', (s) => s.replace(/(name = "kairo"\r?\nversion = ")[^"]+(")/, `$1${version}$2`))
 
 git('add', '-A')
 git('commit', '-m', `Release v${version}`)
