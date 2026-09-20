@@ -18,6 +18,7 @@ const SPEC: &[(&str, Kind, &str)] = &[
     ("long_break_every", Kind::Int(2, 12), "4"),
     ("notifications", Kind::Bool, "true"),
     ("sound", Kind::Bool, "true"),
+    ("auto_update", Kind::Bool, "true"),
     ("onboarded", Kind::Bool, "false"),
 ];
 

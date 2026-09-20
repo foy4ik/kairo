@@ -28,9 +28,36 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "shortDescription": "Local-first desktop workspace for projects, tasks, notes and focus",
-    "windows": { "nsis": { "installMode": "currentUser", "languages": ["Russian", "English"] } }
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": [
+          "Russian",
+          "English"
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM0MzI1RjVGNTJGQjI1NzYKUldSMkpmdFNYMTh5TkxEYzhIeHBUVnFBVjk1dmF5d1JRVml5dEgwYzg5NC8wcHVsMml6aTlpNTEK",
+      "endpoints": [
+        "https://github.com/foy4ik/kairo/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

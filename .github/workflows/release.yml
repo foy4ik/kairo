@@ -1,0 +1,60 @@
+name: Release
+
+# Publishing a version = pushing a tag `vX.Y.Z` (see `npm run release`).
+# The workflow builds signed installers for Windows, macOS and Linux, publishes a GitHub Release and uploads
+# `latest.json`, which installed apps read to offer the update.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, args: '--bundles nsis' }
+          - { os: macos-latest, args: '--bundles app,dmg' }
+          - { os: ubuntu-22.04, args: '--bundles appimage,deb' }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - name: Linux system dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Release notes from commits since the previous tag
+        id: notes
+        shell: bash
+        run: |
+          prev=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)
+          range=${prev:+$prev..}${GITHUB_REF_NAME}
+          {
+            echo 'body<<NOTES_EOF'
+            git log "$range" --no-merges --pretty='- %s' | grep -v -E '^- (Merge|Co-Authored)' || true
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Kairo ${{ github.ref_name }}'
+          releaseBody: ${{ steps.notes.outputs.body }}
+          releaseDraft: false
+          prerelease: false
+          uploadUpdaterJson: true
+          args: --config src-tauri/tauri.release.conf.json ${{ matrix.args }}

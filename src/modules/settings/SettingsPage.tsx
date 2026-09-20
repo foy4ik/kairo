@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { AlertTriangle, Database, Download, FolderOpen, Monitor, Moon, RotateCcw, Sparkles, Sun, Upload, Volume2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Database, Download, FolderOpen, Loader2, Monitor, Moon, RefreshCw, RotateCcw, Sparkles, Sun, Upload, Volume2 } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Input, Segmented, Toggle } from '@/components/Field'
 import { ConfirmDialog, Modal } from '@/components/Modal'
@@ -7,6 +7,7 @@ import { Kbd } from '@/components/Kbd'
 import { useT, type TFn } from '@/i18n'
 import { useSettings } from '@/store/settings'
 import { useData } from '@/store/data'
+import { useUpdater } from '@/store/updater'
 import { dataRepo, filesRepo } from '@/lib/repositories'
 import { pickBackupFile, pickSavePath } from '@/lib/native'
 import { attempt, errorMessage } from '@/lib/errors'
@@ -47,6 +48,31 @@ function NumberSetting({ k, label, t }: { k: NumKey; label: string; t: TFn }) {
         onChange={(e) => { setDraft(e.target.value); setError('') }} onBlur={commit} onKeyDown={(e) => e.key === 'Enter' && commit()} />
       {error && <span role="alert" className="flex items-center gap-1 font-normal text-danger"><AlertTriangle size={12} aria-hidden />{error}</span>}
     </label>
+  )
+}
+
+function UpdatesCard({ version, t }: { version?: string; t: TFn }) {
+  const settings = useSettings((s) => s.settings)
+  const { status, info, error } = useUpdater()
+  const busy = status === 'checking' || status === 'downloading' || status === 'restarting'
+  return (
+    <Card title={t('settings.updates')} description={t('settings.updatesHint')}>
+      <Toggle label={t('settings.autoUpdate')} description={t('settings.autoUpdateHint')} checked={settings.auto_update} onChange={(v) => void useSettings.getState().set('auto_update', v)} />
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        {status === 'available' && info ? (
+          <Button variant="primary" onClick={() => useUpdater.getState().openDialog()} data-testid="update-open"><Download size={14} />{t('settings.updateAvailable', { v: info.version })}</Button>
+        ) : (
+          <Button onClick={() => void useUpdater.getState().check()} disabled={busy} data-testid="update-check">
+            {busy ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}{t('settings.checkNow')}
+          </Button>
+        )}
+        <span role="status" className="flex items-center gap-1.5 text-sm text-muted" data-testid="update-status">
+          {status === 'checking' && t('settings.checking')}
+          {status === 'uptodate' && <><CheckCircle2 size={14} className="text-ok" aria-hidden />{t('settings.upToDate', { v: version ?? '' })}</>}
+          {status === 'error' && <><AlertTriangle size={14} className="text-danger" aria-hidden />{t('update.checkFailed')} {error}</>}
+        </span>
+      </div>
+    </Card>
   )
 }
 
@@ -129,6 +155,8 @@ export function SettingsPage() {
         <Toggle label={t('settings.sound')} description={t('settings.soundHint')} checked={settings.sound} onChange={(v) => void set('sound', v)} />
         <Button size="sm" className="mt-2" onClick={playChime}><Volume2 size={14} />{t('settings.testSound')}</Button>
       </Card>
+
+      <UpdatesCard version={info?.version} t={t} />
 
       <Card title={t('settings.data')} description={t('settings.dataHint')}>
         <div className="mb-4 flex items-start gap-2 rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn" role="note">

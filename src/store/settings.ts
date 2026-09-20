@@ -6,7 +6,7 @@ import { attempt } from '@/lib/errors'
 
 const DEFAULTS: Settings = {
   language: 'ru', theme: 'system', work_min: 25, short_break_min: 5, long_break_min: 15,
-  long_break_every: 4, notifications: true, sound: true, onboarded: false,
+  long_break_every: 4, notifications: true, sound: true, auto_update: true, onboarded: false,
 }
 
 interface SettingsStore {

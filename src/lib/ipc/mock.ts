@@ -29,7 +29,7 @@ interface DB {
 const STORE_KEY = 'kairo-mock-db-v1'
 const DEFAULT_SETTINGS: Settings = {
   language: 'ru', theme: 'system', work_min: 25, short_break_min: 5, long_break_min: 15,
-  long_break_every: 4, notifications: true, sound: true, onboarded: false,
+  long_break_every: 4, notifications: true, sound: true, auto_update: true, onboarded: false,
 }
 const empty = (): DB => ({
   seq: 1, projects: [], columns: [], tasks: [], subtasks: [], tags: [], task_tags: [], notes: [],
@@ -40,7 +40,11 @@ let db: DB = load()
 function load(): DB {
   try {
     const raw = window.localStorage.getItem(STORE_KEY)
-    if (raw) return { ...empty(), ...JSON.parse(raw) }
+    if (raw) {
+      const stored = JSON.parse(raw)
+      // Like the Rust backend, fill in defaults for settings that were never stored.
+      return { ...empty(), ...stored, settings: { ...DEFAULT_SETTINGS, ...stored.settings } }
+    }
   } catch { /* storage unavailable: run in memory */ }
   return empty()
 }

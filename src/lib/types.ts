@@ -132,6 +132,7 @@ export interface Settings {
   long_break_every: number
   notifications: boolean
   sound: boolean
+  auto_update: boolean
   onboarded: boolean
 }
 

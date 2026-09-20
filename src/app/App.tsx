@@ -22,6 +22,8 @@ import { TaskPanel } from '@/modules/tasks/TaskPanel'
 import { useSettings } from '@/store/settings'
 import { useData } from '@/store/data'
 import { useTimer } from '@/store/timer'
+import { useUpdater } from '@/store/updater'
+import { UpdateDialog } from './UpdateDialog'
 import { listen, isTauri } from '@/lib/ipc'
 import { useT } from '@/i18n'
 import { toast } from '@/store/toast'
@@ -42,7 +44,7 @@ function Shell() {
   useHotkeys()
 
   useEffect(() => {
-    void useSettings.getState().load()
+    void useSettings.getState().load().then(() => useUpdater.getState().autoCheck())
     void useData.getState().refresh()
     let off: (() => void) | undefined
     let offErr: (() => void) | undefined
@@ -82,6 +84,7 @@ function Shell() {
       <NewTaskDialog />
       <ProjectDialog />
       <CommandPalette />
+      <UpdateDialog />
       {!onboarded && <Onboarding />}
       <Toaster />
     </>
