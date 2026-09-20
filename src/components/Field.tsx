@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils'
 const fill = (className?: string) => (className && /(^|\s)w-/.test(className) ? '' : 'w-full')
 
 const control =
-  'rounded-md border border-line bg-surface px-2.5 text-sm text-fg placeholder:text-muted transition-colors duration-150 ' +
-  'hover:border-line-strong focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:opacity-60'
+  'rounded-md border border-control bg-surface px-2.5 text-sm text-fg placeholder:text-muted transition-colors duration-150 ' +
+  'hover:border-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:opacity-60'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(
   function Input({ className, invalid, ...rest }, ref) {
@@ -101,7 +101,7 @@ export function Toggle({
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={cn('relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200', checked ? 'bg-accent' : 'bg-line-strong')}
+        className={cn('relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200', checked ? 'bg-accent' : 'bg-control')}
       >
         <span
           className={cn(
@@ -123,7 +123,7 @@ export function Segmented<T extends string>({
   label: string
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-line bg-surface-2 p-0.5">
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-md border border-control bg-surface-2 p-0.5">
       {options.map((o) => (
         <button
           key={o.value}

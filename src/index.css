@@ -10,6 +10,8 @@
   --c-surface-2: #eeeef2;
   --c-line: #e0e0e6;
   --c-line-strong: #c9c9d2;
+  /* Borders of form controls and switches: 3:1 against every surface (WCAG 1.4.11). */
+  --c-control: #858999;
   --c-fg: #17181c;
   --c-muted: #5f6270;
   --c-accent: #4f46e5;
@@ -33,6 +35,7 @@
   --c-surface-2: #1d1f25;
   --c-line: #2a2c34;
   --c-line-strong: #3a3d48;
+  --c-control: #6f7484;
   --c-fg: #e8e9ee;
   --c-muted: #9a9dac;
   --c-accent: #5b5fe8;
@@ -58,6 +61,7 @@
   --color-surface-2: var(--c-surface-2);
   --color-line: var(--c-line);
   --color-line-strong: var(--c-line-strong);
+  --color-control: var(--c-control);
   --color-fg: var(--c-fg);
   --color-muted: var(--c-muted);
   --color-accent: var(--c-accent);

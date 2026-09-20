@@ -142,7 +142,7 @@ export function SettingsPage() {
       </Card>
 
       <Card title={t('settings.timer')} description={t('settings.timerHint')}>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 items-end gap-4 md:grid-cols-4">
           <NumberSetting k="work_min" label={t('settings.workMin')} t={t} />
           <NumberSetting k="short_break_min" label={t('settings.shortMin')} t={t} />
           <NumberSetting k="long_break_min" label={t('settings.longMin')} t={t} />

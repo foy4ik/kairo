@@ -61,7 +61,7 @@ export function Onboarding() {
         </div>
         <div className="mt-6 flex items-center justify-between">
           <Button variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>{t('common.back')}</Button>
-          <div className="flex gap-1.5" role="presentation">{screens.map((_, i) => <span key={i} className={cn('h-1.5 rounded-full transition-all duration-200', i === step ? 'w-6 bg-accent' : 'w-1.5 bg-line-strong')} />)}</div>
+          <div className="flex gap-1.5" role="presentation">{screens.map((_, i) => <span key={i} className={cn('h-1.5 rounded-full transition-all duration-200', i === step ? 'w-6 bg-accent' : 'w-1.5 bg-control')} />)}</div>
           {last
             ? <Button variant="primary" disabled={busy} onClick={() => void finish()} data-testid="onboarding-finish"><Check size={15} />{t('onboarding.start')}</Button>
             : <Button variant="primary" onClick={() => setStep(step + 1)} data-testid="onboarding-next">{t('common.next')}<ArrowRight size={15} /></Button>}

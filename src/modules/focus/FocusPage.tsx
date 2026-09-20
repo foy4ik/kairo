@@ -107,7 +107,7 @@ export function FocusPage() {
 
         <div className="flex items-center gap-2 text-xs text-muted" aria-label={t('focus.progress', { a: dots, b: settings.long_break_every })}>
           {Array.from({ length: settings.long_break_every }, (_, i) => (
-            <span key={i} className={cn('h-2 w-2 rounded-full', i < dots ? 'bg-accent' : 'bg-line-strong')} aria-hidden />
+            <span key={i} className={cn('h-2 w-2 rounded-full', i < dots ? 'bg-accent' : 'bg-control')} aria-hidden />
           ))}
           <span>{t('focus.untilLong', { n: settings.long_break_every - dots })}</span>
         </div>

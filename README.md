@@ -77,7 +77,10 @@ npm test                                   # Vitest: quick-add parser, markdown 
 cargo test --no-default-features           # Rust: repositories on in-memory SQLite, move_task, import/export round-trip, timer, analytics
 npm run e2e                                # Playwright: the critical scenarios below
 npm run smoke:native                       # real desktop build over WebView2/CDP: IPC, timer, DB, export/import
+node scripts/soak.mjs 15                   # 15-minute stability run of the desktop build: memory, DOM, listeners, console errors
 ```
+
+Accessibility: an axe-core WCAG 2.1 A/AA audit of every screen in both themes runs in the E2E suite; text contrast is 4.6:1 or better and form-control borders meet 3:1.
 
 E2E scenarios: project → task → In Progress → Done (real pointer drag) · reorder persistence · focus session → history → analytics (fake clock) · note ↔ task link surviving a reload · export → reset → import · invalid backup rejected · onboarding → demo workspace · RU/EN + theme switch without reload · command palette by keyboard only · Markdown sanitisation.
 
