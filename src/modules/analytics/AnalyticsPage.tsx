@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { BarChart3, CheckCircle2, Clock, Flame, Timer } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/Button'
-import { Input } from '@/components/Field'
+import { DatePicker } from '@/components/DatePicker'
 import { EmptyState, ErrorState, Skeleton } from '@/components/EmptyState'
 import { Segmented } from '@/components/Field'
 import { formatDate, formatDuration, useLang, useT } from '@/i18n'
@@ -92,9 +92,9 @@ export function AnalyticsPage() {
         <div className="flex flex-wrap items-center gap-2">
           {period === 'custom' && (
             <div className="flex items-center gap-1.5">
-              <Input type="date" aria-label={t('analytics.from')} className="w-36" value={custom[0]} max={custom[1]} onChange={(e) => setCustom([e.target.value, custom[1]])} />
+              <DatePicker label={t('analytics.from')} className="w-40" clearable={false} value={custom[0]} max={custom[1]} onChange={(v) => setCustom([v, custom[1]])} />
               <span className="text-muted">–</span>
-              <Input type="date" aria-label={t('analytics.to')} className="w-36" value={custom[1]} min={custom[0]} onChange={(e) => setCustom([custom[0], e.target.value])} />
+              <DatePicker label={t('analytics.to')} className="w-40" clearable={false} value={custom[1]} min={custom[0]} onChange={(v) => setCustom([custom[0], v])} />
             </div>
           )}
           <Segmented<Period> label={t('analytics.period')} value={period} onChange={setPeriod} options={[

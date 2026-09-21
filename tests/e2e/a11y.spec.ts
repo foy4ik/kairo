@@ -39,6 +39,11 @@ for (const theme of ['light', 'dark'] as const) {
         await page.getByTestId('task-card').first().click()
         await page.waitForTimeout(400)
         for (const v of await audit(page)) problems.push(`[task panel] ${v}`)
+        // The date picker calendar, open inside the panel.
+        await page.getByRole('button', { name: 'Выбрать дату' }).click()
+        await page.waitForTimeout(300)
+        for (const v of await audit(page)) problems.push(`[calendar] ${v}`)
+        await page.keyboard.press('Escape')
         await page.keyboard.press('Escape')
         continue
       }

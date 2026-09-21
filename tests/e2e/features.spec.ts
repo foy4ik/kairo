@@ -138,9 +138,10 @@ test.describe('Focus and analytics', () => {
     await page.goto('/#/analytics')
     await expect(page.getByText('Пока нечего анализировать')).toBeVisible()
     await page.getByRole('radio', { name: 'Период' }).click()
-    await page.getByRole('textbox', { name: 'С', exact: true }).fill('2026-09-10')
-    await page.getByRole('textbox', { name: 'По', exact: true }).fill('2026-09-01')
-    await expect(page.getByRole('alert')).toContainText('Дата начала позже');
+    await page.getByRole('textbox', { name: 'С', exact: true }).fill('10.09.2026')
+    await page.getByRole('textbox', { name: 'По', exact: true }).fill('01.09.2026') // before the start: refused, with an example
+    await page.getByRole('textbox', { name: 'По', exact: true }).press('Enter')
+    await expect(page.getByRole('alert')).toContainText('Введите дату в формате');
   })
 })
 

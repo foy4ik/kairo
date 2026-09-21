@@ -406,4 +406,12 @@ export const en: Record<keyof typeof ru, string> = {
   'update.failed': 'The update could not be installed.',
   'update.checkFailed': 'Could not check for updates. Check your internet connection and try again later.',
   'update.unsupported': 'Update checks are available in the installed app only.',
+
+  // date picker
+  'date.placeholder': 'MM/DD/YYYY',
+  'date.pick': 'Pick a date',
+  'date.today': 'Today',
+  'date.prevMonth': 'Previous month',
+  'date.nextMonth': 'Next month',
+  'date.invalid': 'Enter a date like {example}',
 }

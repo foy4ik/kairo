@@ -404,4 +404,12 @@ export const ru = {
   'update.failed': 'Не удалось установить обновление.',
   'update.checkFailed': 'Не удалось проверить обновления. Проверьте подключение к интернету и попробуйте позже.',
   'update.unsupported': 'Проверка обновлений доступна только в установленном приложении.',
+
+  // date picker
+  'date.placeholder': 'ДД.ММ.ГГГГ',
+  'date.pick': 'Выбрать дату',
+  'date.today': 'Сегодня',
+  'date.prevMonth': 'Предыдущий месяц',
+  'date.nextMonth': 'Следующий месяц',
+  'date.invalid': 'Введите дату в формате {example}',
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/Modal'
 import { Button } from '@/components/Button'
 import { Field, Input, Select } from '@/components/Field'
+import { DatePicker } from '@/components/DatePicker'
 import { useT } from '@/i18n'
 import { useUi } from '@/store/ui'
 import { useData } from '@/store/data'
@@ -115,7 +116,7 @@ export function NewTaskDialog() {
               )}
             </Field>
             <Field label={t('task.due')}>
-              {(id) => <Input id={id} type="date" value={due} onChange={(e) => setDue(e.target.value)} />}
+              {(id) => <DatePicker id={id} label={t('task.due')} value={due} onChange={setDue} />}
             </Field>
           </div>
         </form>

@@ -4,6 +4,7 @@ import { FileText, Play, Plus, Trash2, X } from 'lucide-react'
 import { SidePanel, ConfirmDialog } from '@/components/Modal'
 import { Button, IconButton } from '@/components/Button'
 import { Input, Select, Textarea } from '@/components/Field'
+import { DatePicker } from '@/components/DatePicker'
 import { ProgressBar, TagChip } from '@/components/Chips'
 import { SaveIndicator, type SaveState } from '@/components/SaveIndicator'
 import { formatDate, formatDuration, useLang, useT } from '@/i18n'
@@ -156,13 +157,10 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
               {(['low', 'medium', 'high'] as Priority[]).map((p) => <option key={p} value={p}>{t(`priority.${p}`)}</option>)}
             </Select>
           </label>
-          <label className="col-span-2 flex flex-col gap-1 text-xs text-muted">
+          <div className="col-span-2 flex flex-col gap-1 text-xs text-muted">
             {t('task.due')}
-            <div className="flex gap-2">
-              <Input type="date" value={task.due_at?.slice(0, 10) ?? ''} onChange={(e) => void commit({ due_at: e.target.value || null })} />
-              {task.due_at && <Button onClick={() => void commit({ due_at: null })}>{t('common.clear')}</Button>}
-            </div>
-          </label>
+            <DatePicker label={t('task.due')} value={task.due_at?.slice(0, 10) ?? ''} onChange={(v) => void commit({ due_at: v || null })} />
+          </div>
         </div>
       </Section>
 
