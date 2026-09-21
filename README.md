@@ -21,7 +21,7 @@ More: [command palette](docs/screenshots/09-command-palette.png) · [light theme
 
 ## Download
 
-Installers for Windows (`.exe`), macOS (Apple Silicon `.dmg`) and Linux (`.AppImage`, `.deb`) are attached to every
+Installers for Windows (`.exe`), macOS (universal `.dmg` for Apple Silicon and Intel) and Linux (`.AppImage`, `.deb`) are attached to every
 [GitHub release](https://github.com/foy4ik/kairo/releases/latest). They are not code-signed with a paid Microsoft/Apple
 certificate, so the first launch shows a SmartScreen / Gatekeeper warning ("More info → Run anyway").
 On macOS, if the app is reported as "damaged", clear the download quarantine flag once: `xattr -cr /Applications/Kairo.app`,

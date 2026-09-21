@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - { os: windows-latest, args: '--bundles nsis' }
-          - { os: macos-latest, args: '--bundles app,dmg' }
+          - { os: macos-latest, args: '--target universal-apple-darwin --bundles app,dmg' }
           - { os: ubuntu-22.04, args: '--bundles appimage,deb' }
     runs-on: ${{ matrix.os }}
     steps:
@@ -26,6 +26,9 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          # macOS ships one universal binary (Apple Silicon + Intel)
+          targets: ${{ startsWith(matrix.os, 'macos') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       - uses: Swatinem/rust-cache@v2
         with: { workspaces: src-tauri }
       - name: Linux system dependencies

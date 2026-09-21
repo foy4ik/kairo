@@ -54,7 +54,7 @@ then put the public key (`.key.pub`) into `plugins.updater.pubkey` in `tauri.con
 
 ## Platforms
 
-* Windows: NSIS installer (per user). macOS: Apple-silicon build (`aarch64`); Linux: AppImage (updates itself) and `.deb`
+* Windows: NSIS installer (per user). macOS: universal build (`universal-apple-darwin`, Apple Silicon + Intel, macOS 10.13+); Linux: AppImage (updates itself) and `.deb`
   (install manually).
 * Installers are not code-signed with a Microsoft/Apple certificate, so first installs show a SmartScreen / Gatekeeper
   warning. That does not affect the update signature check described above.
