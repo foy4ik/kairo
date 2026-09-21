@@ -1,6 +1,6 @@
 [package]
 name = "kairo"
-version = "0.1.5"
+version = "0.1.6"
 description = "Kairo — local-first desktop workspace for projects, tasks, notes and focus"
 edition = "2021"
 
