@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FileText, Play, Plus, Trash2, X } from 'lucide-react'
 import { SidePanel, ConfirmDialog } from '@/components/Modal'
@@ -15,7 +15,7 @@ import { notesRepo, projectsRepo, tasksRepo, timerRepo } from '@/lib/repositorie
 import { attempt } from '@/lib/errors'
 import { toast } from '@/store/toast'
 import { cn } from '@/lib/utils'
-import type { Column, FocusSession, Priority, Task, TaskPatch } from '@/lib/types'
+import type { Column, FocusSession, Priority, Tag, Task, TaskPatch } from '@/lib/types'
 
 function Section({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
@@ -49,12 +49,15 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
   const nav = useNavigate()
   const notes = useData((s) => s.notes)
   const projects = useData((s) => s.projects)
+  const tasks = useData((s) => s.tasks)
   const sessionsVersion = useTimer((s) => s.sessionsVersion)
   const [columns, setColumns] = useState<Column[]>([])
   const [sessions, setSessions] = useState<FocusSession[]>([])
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description)
   const [tagInput, setTagInput] = useState('')
+  const [tagActive, setTagActive] = useState(0)
+  const tagListId = useId()
   const [checkInput, setCheckInput] = useState('')
   const [save, setSave] = useState<SaveState>('saved')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -80,13 +83,30 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
     if (updated) useData.getState().upsertTask(updated)
   }
 
-  const addTags = async () => {
-    const names = tagInput.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean)
+  const commitNewTags = async (names: string[]) => {
     setTagInput('')
     if (!names.length) return
     await commit({ tags: [...task.tags.map((x) => x.name), ...names] })
     void useData.getState().refreshTasks()
   }
+  const addTags = () => commitNewTags(tagInput.split(/[,\s]+/).map((s) => s.trim()).filter(Boolean))
+
+  // Tags already used elsewhere in this project, offered as you type — never tags from other projects,
+  // and never ones already on this task.
+  const projectTags = useMemo(() => {
+    const seen = new Map<string, Tag>()
+    for (const other of tasks) {
+      if (other.project_id !== task.project_id) continue
+      for (const tg of other.tags) if (!seen.has(tg.name.toLowerCase())) seen.set(tg.name.toLowerCase(), tg)
+    }
+    return [...seen.values()]
+  }, [tasks, task.project_id])
+  const tagQuery = tagInput.trim().toLowerCase()
+  const currentTagNames = new Set(task.tags.map((x) => x.name.toLowerCase()))
+  const tagSuggestions = tagQuery
+    ? projectTags.filter((tg) => !currentTagNames.has(tg.name.toLowerCase()) && tg.name.toLowerCase().startsWith(tagQuery)).slice(0, 8)
+    : []
+  useEffect(() => setTagActive(0), [tagQuery])
 
   const linked = notes.filter((n) => task.note_ids.includes(n.id))
   const linkable = notes.filter((n) => !task.note_ids.includes(n.id))
@@ -169,12 +189,42 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
           {task.tags.map((tag) => (
             <TagChip key={tag.id} tag={tag} onRemove={() => void commit({ tags: task.tags.filter((x) => x.id !== tag.id).map((x) => x.name) })} />
           ))}
-          <Input
-            aria-label={t('task.addTag')} placeholder={t('task.addTag')} value={tagInput} className="h-6 w-28 text-xs"
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); void addTags() } }}
-            onBlur={() => void addTags()}
-          />
+          <div className="relative">
+            <Input
+              aria-label={t('task.addTag')} placeholder={t('task.addTag')} value={tagInput} className="h-6 w-28 text-xs"
+              role="combobox" aria-autocomplete="list" aria-expanded={tagSuggestions.length > 0} aria-controls={tagListId}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown' && tagSuggestions.length) { e.preventDefault(); setTagActive((i) => (i + 1) % tagSuggestions.length) }
+                else if (e.key === 'ArrowUp' && tagSuggestions.length) { e.preventDefault(); setTagActive((i) => (i - 1 + tagSuggestions.length) % tagSuggestions.length) }
+                else if (e.key === 'Escape' && tagSuggestions.length) { e.stopPropagation(); setTagInput('') }
+                else if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault()
+                  if (e.key === 'Enter' && tagSuggestions[tagActive]) void commitNewTags([tagSuggestions[tagActive].name])
+                  else void addTags()
+                }
+              }}
+              onBlur={() => void addTags()}
+            />
+            {tagSuggestions.length > 0 && (
+              <ul id={tagListId} role="listbox" aria-label={t('task.addTag')} className="absolute left-0 top-full z-30 mt-1 min-w-32 max-w-56 rounded-lg border border-line bg-surface p-1 shadow-pop animate-pop-in">
+                {tagSuggestions.map((tg, i) => (
+                  <li key={tg.id}>
+                    <button
+                      type="button" role="option" aria-selected={i === tagActive}
+                      onMouseDown={(e) => e.preventDefault()} // keep the input focused so blur doesn't fire before the click
+                      onMouseEnter={() => setTagActive(i)}
+                      onClick={() => void commitNewTags([tg.name])}
+                      className={cn('flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-xs', i === tagActive ? 'bg-surface-2' : 'hover:bg-surface-2')}
+                    >
+                      <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: tg.color }} />
+                      <span className="truncate">{tg.name}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </Section>
 

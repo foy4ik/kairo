@@ -48,6 +48,62 @@ test.describe('Project → Task → Kanban', () => {
     await expect(col.getByRole('textbox', { name: 'Название' })).toHaveCount(0)
   })
 
+  test('tag suggestions in the task panel are scoped to the current project and narrow as you type', async ({ page }) => {
+    await freshApp(page)
+
+    // A same-prefix tag in a different project must never be suggested.
+    await createProject(page, 'Other project')
+    await quickAddTask(page, 'Elsewhere')
+    await page.getByTestId('task-card').first().click()
+    let panel = page.getByTestId('task-panel')
+    await panel.getByRole('combobox', { name: 'Добавить тег' }).fill('impossible')
+    await panel.getByRole('combobox', { name: 'Добавить тег' }).press('Enter')
+    await page.keyboard.press('Escape')
+
+    await createProject(page, 'Tag project')
+    await quickAddTask(page, 'Has info tag')
+    await quickAddTask(page, 'Has important tag')
+    const cards = page.getByTestId('task-card')
+
+    await cards.filter({ hasText: 'Has info tag' }).click()
+    panel = page.getByTestId('task-panel')
+    await panel.getByRole('combobox', { name: 'Добавить тег' }).fill('info')
+    await panel.getByRole('combobox', { name: 'Добавить тег' }).press('Enter')
+    await page.keyboard.press('Escape')
+
+    await cards.filter({ hasText: 'Has important tag' }).click()
+    panel = page.getByTestId('task-panel')
+    await panel.getByRole('combobox', { name: 'Добавить тег' }).fill('important')
+    await panel.getByRole('combobox', { name: 'Добавить тег' }).press('Enter')
+    await page.keyboard.press('Escape')
+
+    // A fresh task in the same project: typing "i" offers both project tags, never the other project's "impossible".
+    await quickAddTask(page, 'Fresh task')
+    await cards.filter({ hasText: 'Fresh task' }).click()
+    panel = page.getByTestId('task-panel')
+    const tagInput = panel.getByRole('combobox', { name: 'Добавить тег' })
+    await expect(tagInput).toHaveAttribute('aria-expanded', 'false')
+    await tagInput.fill('i')
+    await expect(panel.getByRole('option', { name: 'info' })).toBeVisible()
+    await expect(panel.getByRole('option', { name: 'important' })).toBeVisible()
+    await expect(panel.getByRole('option', { name: 'impossible' })).toHaveCount(0)
+
+    // One more letter narrows it down.
+    await tagInput.fill('im')
+    await expect(panel.getByRole('option', { name: 'info' })).toHaveCount(0)
+    await expect(panel.getByRole('option', { name: 'important' })).toBeVisible()
+
+    // Picking the suggestion adds the tag and closes the list.
+    await panel.getByRole('option', { name: 'important' }).click()
+    await expect(panel.getByText('important', { exact: true })).toBeVisible()
+    await expect(tagInput).toHaveValue('')
+    await expect(tagInput).toHaveAttribute('aria-expanded', 'false')
+
+    // A tag already on the task is not suggested again.
+    await tagInput.fill('im')
+    await expect(panel.getByRole('option', { name: 'important' })).toHaveCount(0)
+  })
+
   test('reordering inside a column persists', async ({ page }) => {
     await freshApp(page)
     await createProject(page, 'Order')
