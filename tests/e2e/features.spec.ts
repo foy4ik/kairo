@@ -89,6 +89,30 @@ test.describe('Notes', () => {
     await page.getByLabel('Поиск по заметкам').fill('zzz')
     await expect(page.getByText('Ничего не найдено').first()).toBeVisible()
   })
+
+  test('switching the open note animates its pane but never resets the search box', async ({ page }) => {
+    await freshApp(page)
+    await page.goto('/#/notes')
+    for (const [title, body] of [['Alpha', 'shared marker text'], ['Beta', 'shared marker text']]) {
+      await page.getByRole('button', { name: 'Новая заметка' }).first().click()
+      await page.getByLabel('Название заметки').fill(title)
+      await page.getByLabel('Текст заметки').fill(body)
+      await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
+    }
+    const search = page.getByLabel('Поиск по заметкам')
+    await search.fill('marker')
+    await expect(page.getByTestId('note-list').getByRole('button')).toHaveCount(2)
+
+    await page.getByTestId('note-list').getByRole('button').filter({ hasText: 'Alpha' }).click()
+    await expect(page.getByLabel('Название заметки')).toHaveValue('Alpha')
+    await expect(page.getByTestId('note-pane')).toHaveClass(/animate-page-in/)
+    await expect(search).toHaveValue('marker')
+
+    await page.getByTestId('note-list').getByRole('button').filter({ hasText: 'Beta' }).click()
+    await expect(page.getByLabel('Название заметки')).toHaveValue('Beta')
+    await expect(search).toHaveValue('marker') // switching notes never clears what was typed into search
+    await expect(page.getByTestId('note-list').getByRole('button')).toHaveCount(2) // the filtered list is untouched too
+  })
 })
 
 test.describe('Focus and analytics', () => {
@@ -231,6 +255,9 @@ test.describe('Language, theme and command palette', () => {
 
   test('sidebar sections transition smoothly by default, and the animation can be turned off', async ({ page }) => {
     await freshApp(page)
+    await createProject(page, 'Transitions')
+    await expect(page.locator('#main > div.animate-page-in')).toBeVisible() // opening a project animates too
+
     await page.getByRole('link', { name: 'Проекты' }).click()
     await expect(page.getByRole('heading', { name: 'Проекты' })).toBeVisible()
     await expect(page.locator('#main > div.animate-page-in')).toBeVisible()

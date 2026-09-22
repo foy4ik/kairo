@@ -74,9 +74,10 @@ function Shell() {
       <Route path="*" element={<NotFound />} />
     </Routes>
   )
-  // Transition only between sidebar sections (the first path segment), not sub-navigation within one
-  // (e.g. picking a note or opening a project keeps its own list/detail layout, no remount).
-  const section = loc.pathname.split('/')[1] || 'dashboard'
+  // Transition on every navigation (opening a project, a note, a section) EXCEPT switching which note is
+  // selected: that page keeps one shared list+search instance and animates only its own detail pane
+  // (see NotesWorkspace), so switching notes never resets what you typed into the search box.
+  const section = loc.pathname.startsWith('/notes') ? '/notes' : loc.pathname
 
   return (
     <>

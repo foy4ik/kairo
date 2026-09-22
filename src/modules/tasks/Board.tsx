@@ -8,6 +8,7 @@ import { ArrowDownWideNarrow, Filter, Plus, Search, X } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Input, Select } from '@/components/Field'
 import { EmptyState, ErrorState, Spinner } from '@/components/EmptyState'
+import { ConfirmDialog } from '@/components/Modal'
 import { useT } from '@/i18n'
 import { useData } from '@/store/data'
 import { useUi } from '@/store/ui'
@@ -70,6 +71,7 @@ export function Board({ projectId }: { projectId: number }) {
     setDragItemsState(dragRef.current)
   }, [])
   const [newColumn, setNewColumn] = useState<string | null>(null)
+  const [confirmSortAll, setConfirmSortAll] = useState(false)
 
   const loadColumns = useCallback(async () => {
     try { setColumns(await projectsRepo.columns(projectId)); setError(null) } catch (e) { setError((e as { message?: string }).message ?? 'error') }
@@ -231,7 +233,7 @@ export function Board({ projectId }: { projectId: number }) {
           <option value="">{t('filters.anyPriority')}</option>
           {(['high', 'medium', 'low'] as Priority[]).map((p) => <option key={p} value={p}>{t(`priority.${p}`)}</option>)}
         </Select>
-        <Button size="sm" variant="ghost" onClick={() => void sortAll()} disabled={emptyBoard || filtering} title={t('board.sortAllHint')}>
+        <Button size="sm" variant="ghost" onClick={() => setConfirmSortAll(true)} disabled={emptyBoard || filtering} title={t('board.sortAllHint')}>
           <ArrowDownWideNarrow size={14} />{t('board.sortAll')}
         </Button>
         {filtering && (
@@ -285,6 +287,13 @@ export function Board({ projectId }: { projectId: number }) {
           {activeTask ? <CardOverlay task={activeTask} done={doneCols.has(activeTask.column_id)} /> : null}
         </DragOverlay>
       </DndContext>
+
+      <ConfirmDialog
+        open={confirmSortAll} title={t('board.sortAll')} message={t('board.sortAllConfirmMessage')}
+        confirmLabel={t('board.sortAllConfirm')} danger={false}
+        onConfirm={() => { setConfirmSortAll(false); void sortAll() }}
+        onClose={() => setConfirmSortAll(false)}
+      />
     </div>
   )
 }

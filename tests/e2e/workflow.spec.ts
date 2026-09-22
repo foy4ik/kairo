@@ -217,14 +217,23 @@ test.describe('Project → Task → Kanban', () => {
     await expect.poll(titles).toEqual(['Overdue task', 'Today high task', 'Today medium task', 'No due task'])
   })
 
-  test('sorting the whole board reorders every column at once', async ({ page }) => {
+  test('sorting the whole board asks for confirmation, then reorders every column at once', async ({ page }) => {
     await freshApp(page)
     await createProject(page, 'Sort all')
     await quickAddTask(page, 'Low !low')
     await quickAddTask(page, 'High !high')
-    await page.getByRole('button', { name: 'Сортировать всё' }).click()
     const col = page.getByTestId('kanban-column').first()
     const titles = async () => col.getByTestId('task-card').allInnerTexts().then((a) => a.map((s) => s.split('\n')[0]))
+
+    await page.getByRole('button', { name: 'Сортировать всё' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Сортировать всё' })
+    await expect(dialog).toContainText('срокам и приоритету')
+    await page.getByRole('button', { name: 'Отмена' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(titles()).resolves.toEqual(['Low', 'High']) // cancelling changes nothing
+
+    await page.getByRole('button', { name: 'Сортировать всё' }).click()
+    await page.getByRole('dialog', { name: 'Сортировать всё' }).getByRole('button', { name: 'Сортировать' }).click()
     await expect.poll(titles).toEqual(['High', 'Low'])
   })
 })

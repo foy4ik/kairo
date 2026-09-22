@@ -135,6 +135,8 @@ export const en: Record<keyof typeof ru, string> = {
   'board.emptyText': 'Add your first task — right in a column: type a title and press Enter.',
   'board.sortAll': 'Sort all',
   'board.sortAllHint': 'Reorder tasks in every column: overdue first, then due today, then the rest — by priority within each group',
+  'board.sortAllConfirmMessage': 'Tasks in every column will be reordered by due date and priority: overdue first, then due today, then the rest — high priority first within each group. You can still drag tasks around afterwards.',
+  'board.sortAllConfirm': 'Sort',
   'tasks.count': 'Tasks: {n}',
   'task.new': 'New task',
   'task.add': 'Add task',

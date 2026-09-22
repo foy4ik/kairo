@@ -7,6 +7,7 @@ import { TagChip } from '@/components/Chips'
 import { cn, debounce } from '@/lib/utils'
 import { formatRelative, useLang, useT } from '@/i18n'
 import { useData } from '@/store/data'
+import { useSettings } from '@/store/settings'
 import { notesRepo } from '@/lib/repositories'
 import { attempt } from '@/lib/errors'
 import type { Note } from '@/lib/types'
@@ -26,6 +27,7 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
   const lang = useLang((s) => s.lang)
   const notes = useData((s) => s.notes)
   const projects = useData((s) => s.projects)
+  const pageTransitions = useSettings((s) => s.settings.page_transitions)
   const [query, setQuery] = useState('')
   const [hits, setHits] = useState<Note[] | null>(null)
   const [tag, setTag] = useState('')
@@ -119,11 +121,15 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
       </aside>
 
       <div className="min-w-0 flex-1 bg-surface">
-        {selected ? (
-          <NoteEditor key={selected.id} note={selected} onDeleted={() => onSelect(null)} />
-        ) : (
-          <EmptyState className="h-full" icon={<FileText size={22} />} title={t('notes.selectTitle')} description={t('notes.selectText')} />
-        )}
+        {/* Keyed by the selected note (not the list/search above): switching notes remounts and animates
+            only this pane, so the list's scroll position and search text are never disturbed. */}
+        <div key={selectedId ?? 'none'} data-testid="note-pane" className={cn('h-full', pageTransitions && 'animate-page-in')}>
+          {selected ? (
+            <NoteEditor note={selected} onDeleted={() => onSelect(null)} />
+          ) : (
+            <EmptyState className="h-full" icon={<FileText size={22} />} title={t('notes.selectTitle')} description={t('notes.selectText')} />
+          )}
+        </div>
       </div>
     </div>
   )
