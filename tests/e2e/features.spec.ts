@@ -123,6 +123,30 @@ test.describe('Focus and analytics', () => {
     await expect(page.getByTestId('stat-Время в фокусе')).toHaveText('25 мин')
   })
 
+  test('duration and long-break cycle can be overridden for one run without touching Settings', async ({ page }) => {
+    await page.clock.install()
+    await freshApp(page)
+    await page.goto('/#/focus')
+    await page.getByTestId('focus-params-toggle').click()
+    await page.getByTestId('focus-duration-input').fill('50')
+    await page.getByTestId('focus-duration-input').press('Tab')
+    await page.getByTestId('focus-long-every-input').fill('2')
+    await page.getByTestId('focus-long-every-input').press('Tab')
+    await expect(page.getByText('до длинного перерыва: 2')).toBeVisible()
+
+    await page.getByRole('button', { name: /^Старт/ }).click()
+    await expect(page.getByTestId('timer-display')).toHaveText('50:00')
+    await page.clock.fastForward(50 * 60_000 + 1000)
+    await expect(page.getByText('Сессия завершена').first()).toBeVisible()
+    // Only the 1st of 2 work sessions has run, so a short break (not yet long) is suggested next.
+    await expect(page.getByRole('button', { name: 'Начать: Короткий перерыв' })).toBeVisible()
+
+    // A one-off override never touches the standard defaults in Settings.
+    await page.getByRole('link', { name: 'Настройки' }).click()
+    await expect(page.getByTestId('setting-work_min')).toHaveValue('25')
+    await expect(page.getByTestId('setting-long_break_every')).toHaveValue('4')
+  })
+
   test('stopping a session early keeps it out of history when it is shorter than a minute', async ({ page }) => {
     await page.clock.install()
     await freshApp(page)

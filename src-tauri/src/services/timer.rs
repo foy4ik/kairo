@@ -29,6 +29,8 @@ pub struct TimerState {
     pub remaining_sec: i64,
     pub started_at: Option<String>,
     pub completed_work_sessions: i64,
+    /// Work sessions per long break, for the cycle currently running (may be a one-off override).
+    pub long_break_every: i64,
 }
 
 /// A finished (or stopped) session ready to be written to history.
@@ -114,6 +116,7 @@ impl Timer {
             remaining_sec: (remaining_ms + 999) / 1000,
             started_at: self.started_at.clone(),
             completed_work_sessions: self.completed_work,
+            long_break_every: self.long_every,
         }
     }
 
@@ -298,6 +301,23 @@ mod tests {
             clock += 10;
             assert!(t.tick(at(t0, clock)).is_some());
             let expected = if i == 4 { "long_break" } else { "short_break" };
+            assert_eq!(t.state(at(t0, clock)).next_type, expected, "after session {i}");
+            t.dismiss();
+        }
+    }
+
+    #[test]
+    fn long_every_is_per_start_not_fixed() {
+        // A one-off override (6 instead of the usual 4) is honoured for that run and reported back in the state.
+        let t0 = Instant::now();
+        let mut t = Timer::new();
+        let mut clock = 0;
+        for i in 1..=6 {
+            t.start(at(t0, clock), "work", None, None, 10, 6).unwrap();
+            assert_eq!(t.state(at(t0, clock)).long_break_every, 6);
+            clock += 10;
+            assert!(t.tick(at(t0, clock)).is_some());
+            let expected = if i == 6 { "long_break" } else { "short_break" };
             assert_eq!(t.state(at(t0, clock)).next_type, expected, "after session {i}");
             t.dismiss();
         }

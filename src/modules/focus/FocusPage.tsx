@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Coffee, Pause, Play, RotateCcw, Square, SkipForward, Timer as TimerIcon } from 'lucide-react'
+import { AlertTriangle, ChevronDown, Coffee, Pause, Play, RotateCcw, Square, SkipForward, SlidersHorizontal, Timer as TimerIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/Button'
 import { Kbd } from '@/components/Kbd'
-import { Select } from '@/components/Field'
+import { Input, Select } from '@/components/Field'
 import { EmptyState } from '@/components/EmptyState'
 import { cn } from '@/lib/utils'
 import { formatDate, formatDuration, useLang, useT } from '@/i18n'
@@ -15,6 +15,9 @@ import type { FocusSession, SessionType } from '@/lib/types'
 import { KIND_COLOR, TimerRing } from './TimerRing'
 
 const KINDS: SessionType[] = ['work', 'short_break', 'long_break']
+/** Minutes a session-length override may span, matching the bounds Settings enforces for the standard defaults. */
+const DURATION_LIMITS: Record<SessionType, [number, number]> = { work: [1, 180], short_break: [1, 60], long_break: [1, 120] }
+const LONG_EVERY_LIMITS: [number, number] = [2, 12]
 
 export function FocusPage() {
   const t = useT()
@@ -27,6 +30,7 @@ export function FocusPage() {
   const [kind, setKind] = useState<SessionType>('work')
   const [taskId, setTaskId] = useState<number | ''>('')
   const [sessions, setSessions] = useState<FocusSession[]>([])
+  const [paramsOpen, setParamsOpen] = useState(false)
 
   useEffect(() => { void timerRepo.sessions(null, null, 30).then(setSessions) }, [version])
 
@@ -37,15 +41,46 @@ export function FocusPage() {
   useEffect(() => { if (phase === 'completed' && timer) setKind(timer.next_type) }, [phase, timer])
   useEffect(() => { if (active && timer?.task_id) setTaskId(timer.task_id) }, [active, timer?.task_id])
 
+  // One-off overrides for the next run only — Settings keeps holding the standard defaults.
+  const settingsMinFor = (k: SessionType) => (k === 'work' ? settings.work_min : k === 'short_break' ? settings.short_break_min : settings.long_break_min)
+  const [durationMin, setDurationMin] = useState(settingsMinFor(kind))
+  const [durationDraft, setDurationDraft] = useState(String(durationMin))
+  const [durationErr, setDurationErr] = useState('')
+  useEffect(() => {
+    const m = settingsMinFor(kind)
+    setDurationMin(m); setDurationDraft(String(m)); setDurationErr('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, settings.work_min, settings.short_break_min, settings.long_break_min])
+  const commitDuration = () => {
+    const [min, max] = DURATION_LIMITS[kind]
+    const n = Number(durationDraft)
+    if (!Number.isInteger(n) || n < min || n > max) { setDurationErr(t('settings.range', { min, max })); return }
+    setDurationErr(''); setDurationMin(n)
+  }
+
+  const [longEvery, setLongEvery] = useState(settings.long_break_every)
+  const [longEveryDraft, setLongEveryDraft] = useState(String(longEvery))
+  const [longEveryErr, setLongEveryErr] = useState('')
+  useEffect(() => { setLongEvery(settings.long_break_every); setLongEveryDraft(String(settings.long_break_every)); setLongEveryErr('') }, [settings.long_break_every])
+  const commitLongEvery = () => {
+    const [min, max] = LONG_EVERY_LIMITS
+    const n = Number(longEveryDraft)
+    if (!Number.isInteger(n) || n < min || n > max) { setLongEveryErr(t('settings.range', { min, max })); return }
+    setLongEveryErr(''); setLongEvery(n)
+  }
+
   const openTasks = useMemo(() => tasks.filter((x) => !x.completed_at), [tasks])
-  const total = timer && (active || phase === 'completed') ? timer.total_sec : (kind === 'work' ? settings.work_min : kind === 'short_break' ? settings.short_break_min : settings.long_break_min) * 60
+  const total = timer && (active || phase === 'completed') ? timer.total_sec : durationMin * 60
   const remaining = timer && active ? timer.remaining_sec : phase === 'completed' ? 0 : total
   const progress = active || phase === 'completed' ? 1 - remaining / Math.max(1, total) : 0
   const currentTask = tasks.find((x) => x.id === (active ? timer?.task_id : taskId))
   const currentProject = projects.find((p) => p.id === currentTask?.project_id)
 
-  const start = (k: SessionType) => void useTimer.getState().start(k, k === 'work' && taskId !== '' ? taskId : null)
-  const dots = timer ? timer.completed_work_sessions % settings.long_break_every : 0
+  const start = (k: SessionType) =>
+    void useTimer.getState().start(k, k === 'work' && taskId !== '' ? taskId : null, durationMin * 60, longEvery)
+  // While a run is active (or just finished), its own possibly-overridden cycle length is shown; otherwise the draft is.
+  const longEveryShown = active || phase === 'completed' ? timer!.long_break_every : longEvery
+  const dots = timer ? timer.completed_work_sessions % longEveryShown : 0
 
   const today = new Date().toDateString()
   const todays = sessions.filter((s) => new Date(s.started_at).toDateString() === today)
@@ -105,11 +140,50 @@ export function FocusPage() {
           </div>
         ) : null}
 
-        <div className="flex items-center gap-2 text-xs text-muted" aria-label={t('focus.progress', { a: dots, b: settings.long_break_every })}>
-          {Array.from({ length: settings.long_break_every }, (_, i) => (
+        {(phase === 'idle' || phase === 'completed') && (
+          <div className="w-full max-w-sm">
+            <button
+              type="button" onClick={() => setParamsOpen((v) => !v)} aria-expanded={paramsOpen} data-testid="focus-params-toggle"
+              className="flex w-full items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-sm text-muted transition-colors hover:text-fg"
+            >
+              <span className="flex items-center gap-1.5"><SlidersHorizontal size={14} aria-hidden />{t('focus.params')}</span>
+              <span className="flex items-center gap-1.5 tabular-nums text-xs">
+                {t('focus.paramsSummary', { min: durationMin, every: longEvery })}
+                <ChevronDown size={14} aria-hidden className={cn('transition-transform', paramsOpen && 'rotate-180')} />
+              </span>
+            </button>
+            {paramsOpen && (
+              <div className="mt-2 grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-3">
+                <label className="flex flex-col gap-1 text-xs font-medium text-muted">
+                  {t('focus.duration')}
+                  <Input
+                    type="number" inputMode="numeric" min={DURATION_LIMITS[kind][0]} max={DURATION_LIMITS[kind][1]}
+                    value={durationDraft} invalid={!!durationErr} data-testid="focus-duration-input"
+                    onChange={(e) => { setDurationDraft(e.target.value); setDurationErr('') }}
+                    onBlur={commitDuration} onKeyDown={(e) => e.key === 'Enter' && commitDuration()}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-muted">
+                  {t('focus.sessionsBeforeLong')}
+                  <Input
+                    type="number" inputMode="numeric" min={LONG_EVERY_LIMITS[0]} max={LONG_EVERY_LIMITS[1]}
+                    value={longEveryDraft} invalid={!!longEveryErr} data-testid="focus-long-every-input"
+                    onChange={(e) => { setLongEveryDraft(e.target.value); setLongEveryErr('') }}
+                    onBlur={commitLongEvery} onKeyDown={(e) => e.key === 'Enter' && commitLongEvery()}
+                  />
+                </label>
+                {durationErr && <span role="alert" className="col-span-2 flex items-center gap-1 text-xs text-danger"><AlertTriangle size={12} aria-hidden />{durationErr}</span>}
+                {longEveryErr && <span role="alert" className="col-span-2 flex items-center gap-1 text-xs text-danger"><AlertTriangle size={12} aria-hidden />{longEveryErr}</span>}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 text-xs text-muted" aria-label={t('focus.progress', { a: dots, b: longEveryShown })}>
+          {Array.from({ length: longEveryShown }, (_, i) => (
             <span key={i} className={cn('h-2 w-2 rounded-full', i < dots ? 'bg-accent' : 'bg-control')} aria-hidden />
           ))}
-          <span>{t('focus.untilLong', { n: settings.long_break_every - dots })}</span>
+          <span>{t('focus.untilLong', { n: longEveryShown - dots })}</span>
         </div>
       </section>
 

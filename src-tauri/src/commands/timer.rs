@@ -14,8 +14,9 @@ pub async fn start_timer(
     kind: Option<String>,
     task_id: Option<i64>,
     duration_sec: Option<i64>,
+    long_break_every: Option<i64>,
 ) -> AppResult<TimerState> {
-    runtime::start(&app, kind, task_id, duration_sec)
+    runtime::start(&app, kind, task_id, duration_sec, long_break_every)
 }
 
 #[tauri::command(rename_all = "snake_case")]

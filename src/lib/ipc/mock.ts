@@ -107,21 +107,21 @@ const colTasks = (columnId: number, except = -1) =>
 const renumber = (ids: number[]) => ids.forEach((id, i) => { db.tasks.find((t) => t.id === id)!.position = i })
 
 // ---- timer --------------------------------------------------------------
-interface MockTimer { phase: TimerState['phase']; kind: SessionType; task_id: number | null; project_id: number | null; total: number; elapsed: number; resumedAt: number | null; startedAt: string | null; completedWork: number }
-const timer: MockTimer = { phase: 'idle', kind: 'work', task_id: null, project_id: null, total: 0, elapsed: 0, resumedAt: null, startedAt: null, completedWork: 0 }
+interface MockTimer { phase: TimerState['phase']; kind: SessionType; task_id: number | null; project_id: number | null; total: number; elapsed: number; resumedAt: number | null; startedAt: string | null; completedWork: number; longEvery: number }
+const timer: MockTimer = { phase: 'idle', kind: 'work', task_id: null, project_id: null, total: 0, elapsed: 0, resumedAt: null, startedAt: null, completedWork: 0, longEvery: 4 }
 let ticker: ReturnType<typeof setInterval> | undefined
 const elapsedMs = () => Math.min(timer.total, timer.elapsed + (timer.resumedAt ? Date.now() - timer.resumedAt : 0))
 function nextKind(): SessionType {
   if (timer.kind !== 'work') return 'work'
   const after = timer.phase === 'completed' ? timer.completedWork : timer.completedWork + 1
-  return after > 0 && after % db.settings.long_break_every === 0 ? 'long_break' : 'short_break'
+  return after > 0 && after % timer.longEvery === 0 ? 'long_break' : 'short_break'
 }
 function timerState(): TimerState {
   const remaining = timer.phase === 'idle' || timer.phase === 'completed' ? 0 : Math.max(0, timer.total - elapsedMs())
   return {
     phase: timer.phase, type: timer.kind, next_type: nextKind(), task_id: timer.task_id, project_id: timer.project_id,
     total_sec: Math.floor(timer.total / 1000), remaining_sec: Math.ceil(remaining / 1000),
-    started_at: timer.startedAt, completed_work_sessions: timer.completedWork,
+    started_at: timer.startedAt, completed_work_sessions: timer.completedWork, long_break_every: timer.longEvery,
   }
 }
 const pushState = () => emit('timer-state', timerState())
@@ -461,12 +461,17 @@ const handlers: Record<string, (a: A) => unknown> = {
     window.open(String(url), '_blank', 'noopener')
   },
   get_timer_state: () => timerState(),
-  start_timer: ({ kind, task_id, duration_sec }) => {
+  start_timer: ({ kind, task_id, duration_sec, long_break_every }) => {
     if (timer.phase === 'running' || timer.phase === 'paused') throw err('TIMER_BUSY', 'A session is already in progress')
     const k: SessionType = kind ?? 'work'
     const minutes = k === 'work' ? db.settings.work_min : k === 'short_break' ? db.settings.short_break_min : db.settings.long_break_min
+    if (long_break_every != null && (long_break_every < 2 || long_break_every > 12)) throw err('VALIDATION', 'Sessions before a long break must be between 2 and 12')
     const task = task_id ? need(db.tasks, task_id, 'Task') : null
-    Object.assign(timer, { phase: 'running', kind: k, task_id: task?.id ?? null, project_id: task?.project_id ?? null, total: (duration_sec ?? minutes * 60) * 1000, elapsed: 0, resumedAt: Date.now(), startedAt: now() })
+    Object.assign(timer, {
+      phase: 'running', kind: k, task_id: task?.id ?? null, project_id: task?.project_id ?? null,
+      total: (duration_sec ?? minutes * 60) * 1000, elapsed: 0, resumedAt: Date.now(), startedAt: now(),
+      longEvery: long_break_every ?? db.settings.long_break_every,
+    })
     startTicker(); pushState()
     return timerState()
   },

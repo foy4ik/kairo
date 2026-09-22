@@ -14,7 +14,7 @@ interface TimerStore {
   /** Bumped whenever a session is written, so history/analytics views can refetch. */
   sessionsVersion: number
   init: () => Promise<() => void>
-  start: (kind: SessionType, taskId: number | null) => Promise<void>
+  start: (kind: SessionType, taskId: number | null, durationSec?: number | null, longBreakEvery?: number | null) => Promise<void>
   pause: () => Promise<void>
   resume: () => Promise<void>
   stop: () => Promise<void>
@@ -43,7 +43,7 @@ export const useTimer = create<TimerStore>((set, get) => {
       ])
       return () => offs.forEach((off) => off())
     },
-    start: async (kind, taskId) => apply(await attempt(() => timerRepo.start(kind, taskId))),
+    start: async (kind, taskId, durationSec = null, longBreakEvery = null) => apply(await attempt(() => timerRepo.start(kind, taskId, durationSec, longBreakEvery))),
     pause: async () => apply(await attempt(() => timerRepo.pause())),
     resume: async () => apply(await attempt(() => timerRepo.resume())),
     stop: async () => apply(await attempt(() => timerRepo.stop())),

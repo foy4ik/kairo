@@ -54,7 +54,8 @@ export const filesRepo = {
 
 export const timerRepo = {
   state: () => call<TimerState>('get_timer_state'),
-  start: (kind: SessionType, task_id: number | null, duration_sec: number | null = null) => call<TimerState>('start_timer', { kind, task_id, duration_sec }),
+  start: (kind: SessionType, task_id: number | null, duration_sec: number | null = null, long_break_every: number | null = null) =>
+    call<TimerState>('start_timer', { kind, task_id, duration_sec, long_break_every }),
   pause: () => call<TimerState>('pause_timer'),
   resume: () => call<TimerState>('resume_timer'),
   stop: () => call<TimerState>('stop_timer'),

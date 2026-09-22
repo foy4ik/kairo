@@ -101,6 +101,8 @@ export interface TimerState {
   remaining_sec: number
   started_at: string | null
   completed_work_sessions: number
+  /** Work sessions per long break for the cycle currently running (may differ from Settings for a one-off run). */
+  long_break_every: number
 }
 
 export interface SearchResults {

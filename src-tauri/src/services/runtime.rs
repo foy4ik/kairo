@@ -50,9 +50,20 @@ fn default_seconds(app: &AppHandle, kind: &str) -> AppResult<(i64, i64)> {
     Ok((settings::get_int(&conn, key) * 60, settings::get_int(&conn, "long_break_every")))
 }
 
-pub fn start(app: &AppHandle, kind: Option<String>, task_id: Option<i64>, duration_sec: Option<i64>) -> AppResult<TimerState> {
+pub fn start(
+    app: &AppHandle,
+    kind: Option<String>,
+    task_id: Option<i64>,
+    duration_sec: Option<i64>,
+    long_break_every: Option<i64>,
+) -> AppResult<TimerState> {
     let kind = kind.unwrap_or_else(|| "work".into());
-    let (default_sec, long_every) = default_seconds(app, &kind)?;
+    let (default_sec, default_long_every) = default_seconds(app, &kind)?;
+    if let Some(n) = long_break_every {
+        if !(2..=12).contains(&n) {
+            return Err(AppError::validation("Sessions before a long break must be between 2 and 12"));
+        }
+    }
     let project_id = match task_id {
         Some(id) => {
             let db = app.state::<Db>();
@@ -63,7 +74,14 @@ pub fn start(app: &AppHandle, kind: Option<String>, task_id: Option<i64>, durati
     };
     with_timer(app, |t| {
         t.dismiss();
-        t.start(Instant::now(), &kind, task_id, project_id, duration_sec.unwrap_or(default_sec), long_every)
+        t.start(
+            Instant::now(),
+            &kind,
+            task_id,
+            project_id,
+            duration_sec.unwrap_or(default_sec),
+            long_break_every.unwrap_or(default_long_every),
+        )
     })??;
     publish(app)
 }
@@ -99,7 +117,7 @@ pub fn toggle(app: &AppHandle) -> AppResult<TimerState> {
     match phase {
         Running => pause(app),
         Paused => resume(app),
-        Idle | Completed => start(app, None, None, None),
+        Idle | Completed => start(app, None, None, None, None),
     }
 }
 

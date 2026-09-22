@@ -36,7 +36,7 @@ After the first install the app **updates itself**: it asks, then downloads a si
 | **Projects** | Statuses (active / paused / completed / archived), colour + icon, progress, per-project board / notes / files / focus history |
 | **Kanban** | Custom columns (rename, reorder, "done" column), drag & drop with persistent order, inline quick add (`Write docs #docs !high`), filters, side panel with checklist, tags, deadline, linked notes and focus time |
 | **Notes** | Markdown editor with live preview, formatting toolbar, task-list toggling in the preview, tags, project + task links, full-text search, autosave with explicit *saved / saving / error* state |
-| **Focus** | Work / short / long break, configurable, bound to a task, runs in Rust (survives a hidden window), system tray countdown, native notification + chime |
+| **Focus** | Work / short / long break, standard durations and cycle length set in Settings, one-off override per run right on the Focus screen, bound to a task, runs in Rust (survives a hidden window), system tray countdown, native notification + chime |
 | **Analytics** | Day / week / custom period, completed tasks, sessions, focus time, per-project and per-tag breakdown, streak |
 | **Files** | Links to local files and folders (paths only), open in the system app / reveal in folder, clear "file moved" state |
 | **Data** | JSON export / import with schema validation and automatic safety copy, SQLite backup, reset, demo data |
