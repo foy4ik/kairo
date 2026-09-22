@@ -42,12 +42,15 @@ export function KanbanColumn({ column, index, count, siblings, tasks, dragDisabl
   useEffect(() => setName(column.name), [column.name])
   useEffect(() => { if (adding) addRef.current?.focus() }, [adding])
 
-  const submit = async () => {
+  // Enter keeps the field open (focused again) for adding several tasks in a row; clicking away submits
+  // once and closes it, like leaving any other form field with a value.
+  const submit = async (opts: { keepOpen?: boolean } = {}) => {
     const v = draft.trim()
     if (!v) return
     setDraft('')
     await onAdd(v)
-    addRef.current?.focus()
+    if (opts.keepOpen) addRef.current?.focus()
+    else setAdding(false)
   }
   const others = siblings.filter((c) => c.id !== column.id)
 
@@ -92,12 +95,12 @@ export function KanbanColumn({ column, index, count, siblings, tasks, dragDisabl
           </button>
         )}
         {adding && (
-          <form onSubmit={(e) => { e.preventDefault(); void submit() }} className="flex flex-col gap-1.5">
+          <form onSubmit={(e) => { e.preventDefault(); void submit({ keepOpen: true }) }} className="flex flex-col gap-1.5">
             <Input
               ref={addRef} value={draft} aria-label={t('task.title')} placeholder={t('task.quickPlaceholder')}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setAdding(false); setDraft('') } }}
-              onBlur={() => { if (!draft.trim()) setAdding(false) }}
+              onBlur={() => { if (draft.trim()) void submit(); else setAdding(false) }}
             />
             <p className="px-0.5 text-[11px] text-muted">{t('task.quickHint')}</p>
           </form>

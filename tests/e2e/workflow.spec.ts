@@ -26,6 +26,28 @@ test.describe('Project → Task → Kanban', () => {
     await expect(page.getByTestId('kanban-column').nth(2).getByTestId('task-card')).toHaveCount(1)
   })
 
+  test('quick-add: clicking away with text creates the task, clicking away empty discards it', async ({ page }) => {
+    await freshApp(page)
+    await createProject(page, 'Quick add blur')
+    const col = page.getByTestId('kanban-column').first()
+
+    // Empty field, click elsewhere: no task, the field just closes (unchanged behaviour).
+    await col.getByRole('button', { name: 'Добавить задачу' }).click()
+    await col.getByRole('textbox', { name: 'Название' }).click()
+    await page.getByRole('heading', { name: 'Quick add blur' }).click()
+    await expect(col.getByTestId('task-card')).toHaveCount(0)
+    await expect(col.getByRole('textbox', { name: 'Название' })).toHaveCount(0)
+
+    // Text in the field, click elsewhere: the task is created, same as pressing Enter.
+    await col.getByRole('button', { name: 'Добавить задачу' }).click()
+    await col.getByRole('textbox', { name: 'Название' }).fill('Created on blur #docs')
+    await page.getByRole('heading', { name: 'Quick add blur' }).click()
+    const card = col.getByTestId('task-card').filter({ hasText: 'Created on blur' })
+    await expect(card).toBeVisible()
+    await expect(card).toContainText('docs')
+    await expect(col.getByRole('textbox', { name: 'Название' })).toHaveCount(0)
+  })
+
   test('reordering inside a column persists', async ({ page }) => {
     await freshApp(page)
     await createProject(page, 'Order')
