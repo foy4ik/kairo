@@ -19,6 +19,7 @@ const SPEC: &[(&str, Kind, &str)] = &[
     ("notifications", Kind::Bool, "true"),
     ("sound", Kind::Bool, "true"),
     ("auto_update", Kind::Bool, "true"),
+    ("page_transitions", Kind::Bool, "true"),
     ("onboarded", Kind::Bool, "false"),
 ];
 

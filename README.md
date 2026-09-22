@@ -34,14 +34,14 @@ After the first install the app **updates itself**: it asks, then downloads a si
 | Area | Highlights |
 |---|---|
 | **Projects** | Statuses (active / paused / completed / archived), colour + icon, progress, per-project board / notes / files / focus history |
-| **Kanban** | Custom columns (rename, reorder, "done" column), drag & drop with persistent order, inline quick add (`Write docs #docs !high`), filters, side panel with checklist, tags, deadline, linked notes and focus time |
+| **Kanban** | Custom columns (rename, reorder, "done" column), drag & drop with persistent order, one-click sort by due date + priority (per column or the whole board) that still leaves manual reordering free afterwards, inline quick add (`Write docs #docs !high`), filters, side panel with checklist, tag suggestions scoped to the current project, deadline, linked notes and focus time |
 | **Notes** | Markdown editor with live preview, formatting toolbar, task-list toggling in the preview, tags, project + task links, full-text search, autosave with explicit *saved / saving / error* state |
 | **Focus** | Work / short / long break, standard durations and cycle length set in Settings, one-off override per run right on the Focus screen, bound to a task, runs in Rust (survives a hidden window), system tray countdown, native notification + chime |
 | **Analytics** | Day / week / custom period, completed tasks, sessions, focus time, per-project and per-tag breakdown, streak |
 | **Files** | Links to local files and folders (paths only), open in the system app / reveal in folder, clear "file moved" state |
 | **Data** | JSON export / import with schema validation and automatic safety copy, SQLite backup, reset, demo data |
 | **Updates** | Signed auto-update from GitHub Releases: the app asks first, downloads with progress, verifies the signature and restarts; can be switched off |
-| **Desktop UX** | Command palette (`Ctrl+K`), quick open (`Ctrl+P`), keyboard-first, RU / EN without restart, Light / Dark / System theme |
+| **Desktop UX** | Command palette (`Ctrl+K`), quick open (`Ctrl+P`), keyboard-first, RU / EN without restart, Light / Dark / System theme, smooth cross-section page transitions (toggle off in Settings for maximum speed) |
 
 Keyboard: `Ctrl+K` palette · `Ctrl+P` search · `N` new task · `Ctrl+Enter` save/confirm · `Esc` close · `Space` pause/resume timer · `Ctrl+1…6` navigation.
 

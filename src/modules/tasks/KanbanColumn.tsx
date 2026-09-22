@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { ArrowLeft, ArrowRight, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowDownWideNarrow, ArrowLeft, ArrowRight, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Menu } from '@/components/Menu'
 import { Button, IconButton } from '@/components/Button'
 import { Input, Select } from '@/components/Field'
@@ -25,10 +25,11 @@ interface Props {
   onRename: (name: string) => void
   onToggleDone: () => void
   onMove: (dir: -1 | 1) => void
+  onSort: () => void
   onDelete: (moveTo: number | null) => void
 }
 
-export function KanbanColumn({ column, index, count, siblings, tasks, dragDisabled, onOpenTask, onAdd, onRename, onToggleDone, onMove, onDelete }: Props) {
+export function KanbanColumn({ column, index, count, siblings, tasks, dragDisabled, onOpenTask, onAdd, onRename, onToggleDone, onMove, onSort, onDelete }: Props) {
   const t = useT()
   const { setNodeRef, isOver } = useDroppable({ id: columnKey(column.id) })
   const [adding, setAdding] = useState(false)
@@ -77,6 +78,7 @@ export function KanbanColumn({ column, index, count, siblings, tasks, dragDisabl
             { label: column.is_done ? t('column.unmarkDone') : t('column.markDone'), icon: <CheckCircle2 size={14} />, onSelect: onToggleDone },
             { label: t('column.moveLeft'), icon: <ArrowLeft size={14} />, onSelect: () => onMove(-1), disabled: index === 0 },
             { label: t('column.moveRight'), icon: <ArrowRight size={14} />, onSelect: () => onMove(1), disabled: index === count - 1 },
+            { label: t('column.sort'), icon: <ArrowDownWideNarrow size={14} />, onSelect: onSort, disabled: dragDisabled || tasks.length < 2 },
             'separator',
             { label: t('column.delete'), icon: <Trash2 size={14} />, danger: true, disabled: others.length === 0, onSelect: () => { setTarget(others[0]?.id ?? ''); if (tasks.length === 0) onDelete(null); else setDeleting(true) } },
           ]}

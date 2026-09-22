@@ -40,6 +40,7 @@ function Shell() {
   const loc = useLocation()
   const settingsLoaded = useSettings((s) => s.loaded)
   const onboarded = useSettings((s) => s.settings.onboarded)
+  const pageTransitions = useSettings((s) => s.settings.page_transitions)
   const { loaded, error } = useData()
   useHotkeys()
 
@@ -60,23 +61,30 @@ function Shell() {
   if (!settingsLoaded || (!loaded && !error)) return <PageLoading />
   if (error) return <ErrorState title={t('error.database')} message={error} onRetry={() => void useData.getState().refresh()} />
 
+  const routes = (
+    <Routes>
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/projects" element={<ProjectsPage />} />
+      <Route path="/projects/:id" element={<ProjectPage />} />
+      <Route path="/notes" element={<NotesPage />} />
+      <Route path="/notes/:id" element={<NotesPage />} />
+      <Route path="/focus" element={<FocusPage />} />
+      <Route path="/analytics" element={<AnalyticsPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  )
+  // Transition only between sidebar sections (the first path segment), not sub-navigation within one
+  // (e.g. picking a note or opening a project keeps its own list/detail layout, no remount).
+  const section = loc.pathname.split('/')[1] || 'dashboard'
+
   return (
     <>
       <div className="flex h-full">
         <Sidebar />
         <main className="min-w-0 flex-1 overflow-hidden" id="main">
           <ErrorBoundary resetKey={loc.pathname}>
-            <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/projects" element={<ProjectsPage />} />
-              <Route path="/projects/:id" element={<ProjectPage />} />
-              <Route path="/notes" element={<NotesPage />} />
-              <Route path="/notes/:id" element={<NotesPage />} />
-              <Route path="/focus" element={<FocusPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            {pageTransitions ? <div key={section} className="h-full animate-page-in">{routes}</div> : routes}
           </ErrorBoundary>
         </main>
       </div>

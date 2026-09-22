@@ -4,7 +4,7 @@ import {
   type CollisionDetection, type DragEndEvent, type DragOverEvent, type DragStartEvent,
 } from '@dnd-kit/core'
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { Filter, Plus, Search, X } from 'lucide-react'
+import { ArrowDownWideNarrow, Filter, Plus, Search, X } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Input, Select } from '@/components/Field'
 import { EmptyState, ErrorState, Spinner } from '@/components/EmptyState'
@@ -17,6 +17,7 @@ import { toast } from '@/store/toast'
 import { dueState } from '@/lib/utils'
 import type { Column, Priority, Task } from '@/lib/types'
 import { KanbanColumn, columnKey } from './KanbanColumn'
+import { diffOrder, sortByUrgency } from './smartSort'
 import { CardOverlay, cardId } from './TaskCard'
 import { parseQuickAdd } from './quickAdd'
 import { KanbanSquare } from 'lucide-react'
@@ -172,6 +173,22 @@ export function Board({ projectId }: { projectId: number }) {
     if (created) await useData.getState().refreshTasks()
   }
 
+  /** Reorders one column in place by due date and priority (see smartSort). Uses the same move queue as
+   *  drag & drop, so it never races a drag that is still saving, and only sends the moves actually needed. */
+  const sortColumn = async (columnId: number) => {
+    const currentIds = (items[columnKey(columnId)] ?? []).map((cid) => Number(cid.slice(2)))
+    const current = currentIds.map((id) => byId.get(id)).filter((x): x is Task => !!x)
+    const targetIds = sortByUrgency(current).map((x) => x.id)
+    const moves = diffOrder(currentIds, targetIds)
+    if (!moves.length) return
+    moveQueue.current = moveQueue.current.then(async () => {
+      for (const m of moves) await attempt(() => tasksRepo.move(m.id, columnId, m.index))
+      await useData.getState().refreshTasks()
+    })
+    await moveQueue.current
+  }
+  const sortAll = async () => { for (const c of columns ?? []) await sortColumn(c.id) }
+
   const columnAction = async (fn: () => Promise<unknown>) => {
     const ok = await attempt(async () => { await fn(); return true })
     if (ok) { await loadColumns(); await useData.getState().refreshTasks() }
@@ -214,6 +231,9 @@ export function Board({ projectId }: { projectId: number }) {
           <option value="">{t('filters.anyPriority')}</option>
           {(['high', 'medium', 'low'] as Priority[]).map((p) => <option key={p} value={p}>{t(`priority.${p}`)}</option>)}
         </Select>
+        <Button size="sm" variant="ghost" onClick={() => void sortAll()} disabled={emptyBoard || filtering} title={t('board.sortAllHint')}>
+          <ArrowDownWideNarrow size={14} />{t('board.sortAll')}
+        </Button>
         {filtering && (
           <>
             <span className="flex items-center gap-1 text-xs text-muted"><Filter size={12} aria-hidden />{t('filters.shown', { a: visible, b: tasks.length })}</span>
@@ -247,6 +267,7 @@ export function Board({ projectId }: { projectId: number }) {
               onRename={(name) => void columnAction(() => projectsRepo.updateColumn(c.id, { name }))}
               onToggleDone={() => void columnAction(() => projectsRepo.updateColumn(c.id, { is_done: !c.is_done }))}
               onMove={(dir) => moveColumn(i, dir)}
+              onSort={() => void sortColumn(c.id)}
               onDelete={(moveTo) => void columnAction(() => projectsRepo.deleteColumn(c.id, moveTo)).then(() => toast.success(t('column.deleted')))}
             />
           ))}

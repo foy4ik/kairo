@@ -135,6 +135,7 @@ export interface Settings {
   notifications: boolean
   sound: boolean
   auto_update: boolean
+  page_transitions: boolean
   onboarded: boolean
 }
 

@@ -229,6 +229,29 @@ test.describe('Language, theme and command palette', () => {
     await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible()
   })
 
+  test('sidebar sections transition smoothly by default, and the animation can be turned off', async ({ page }) => {
+    await freshApp(page)
+    await page.getByRole('link', { name: 'Проекты' }).click()
+    await expect(page.getByRole('heading', { name: 'Проекты' })).toBeVisible()
+    await expect(page.locator('#main > div.animate-page-in')).toBeVisible()
+    await page.getByRole('link', { name: 'Аналитика' }).click()
+    await expect(page.locator('#main > div.animate-page-in')).toBeVisible()
+
+    await page.getByRole('link', { name: 'Настройки' }).click()
+    await expect(page.getByRole('switch', { name: 'Плавное переключение вкладок' })).toHaveAttribute('aria-checked', 'true')
+    await page.getByRole('switch', { name: 'Плавное переключение вкладок' }).click()
+    await expect(page.getByRole('switch', { name: 'Плавное переключение вкладок' })).toHaveAttribute('aria-checked', 'false')
+
+    await page.getByRole('link', { name: 'Проекты' }).click()
+    await expect(page.getByRole('heading', { name: 'Проекты' })).toBeVisible()
+    await expect(page.locator('#main > div.animate-page-in')).toHaveCount(0)
+
+    // The choice survives a reload.
+    await page.reload()
+    await page.getByRole('link', { name: 'Настройки' }).click()
+    await expect(page.getByRole('switch', { name: 'Плавное переключение вкладок' })).toHaveAttribute('aria-checked', 'false')
+  })
+
   test('Ctrl+K opens the palette: create a task by keyboard only, open a project', async ({ page }) => {
     await freshApp(page)
     await createProject(page, 'Palette target')

@@ -180,4 +180,51 @@ test.describe('Project → Task → Kanban', () => {
     await expect(page.getByTestId('kanban-column')).toHaveCount(3)
     await expect(page.getByTestId('task-card').filter({ hasText: 'Stay' })).toBeVisible()
   })
+
+  test('sorting by due date and priority: per column from its menu, persists after reload', async ({ page }) => {
+    await freshApp(page)
+    await createProject(page, 'Sort test')
+    const col = page.getByTestId('kanban-column').first()
+    const offset = (days: number) =>
+      page.evaluate((d) => {
+        const dt = new Date(); dt.setDate(dt.getDate() + d)
+        return `${String(dt.getDate()).padStart(2, '0')}.${String(dt.getMonth() + 1).padStart(2, '0')}.${dt.getFullYear()}`
+      }, days)
+    const setDue = async (title: string, ddmmyyyy: string) => {
+      await col.getByTestId('task-card').filter({ hasText: title }).click()
+      const panel = page.getByTestId('task-panel')
+      const field = panel.getByRole('textbox', { name: 'Срок' })
+      await field.fill(ddmmyyyy)
+      await field.press('Enter')
+      await page.keyboard.press('Escape')
+    }
+
+    // Added out of the expected order on purpose, so the sort actually has something to do.
+    await quickAddTask(page, 'No due task')
+    await quickAddTask(page, 'Today medium task')
+    await quickAddTask(page, 'Overdue task !low')
+    await quickAddTask(page, 'Today high task !high')
+    await setDue('Today medium task', await offset(0))
+    await setDue('Overdue task', await offset(-2))
+    await setDue('Today high task', await offset(0))
+
+    await col.getByRole('button', { name: 'Действия с колонкой' }).click()
+    await page.getByRole('menuitem', { name: 'Сортировать по срокам и приоритету' }).click()
+
+    const titles = async () => col.getByTestId('task-card').allInnerTexts().then((a) => a.map((s) => s.split('\n')[0]))
+    await expect.poll(titles).toEqual(['Overdue task', 'Today high task', 'Today medium task', 'No due task'])
+    await page.reload()
+    await expect.poll(titles).toEqual(['Overdue task', 'Today high task', 'Today medium task', 'No due task'])
+  })
+
+  test('sorting the whole board reorders every column at once', async ({ page }) => {
+    await freshApp(page)
+    await createProject(page, 'Sort all')
+    await quickAddTask(page, 'Low !low')
+    await quickAddTask(page, 'High !high')
+    await page.getByRole('button', { name: 'Сортировать всё' }).click()
+    const col = page.getByTestId('kanban-column').first()
+    const titles = async () => col.getByTestId('task-card').allInnerTexts().then((a) => a.map((s) => s.split('\n')[0]))
+    await expect.poll(titles).toEqual(['High', 'Low'])
+  })
 })

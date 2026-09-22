@@ -139,6 +139,12 @@ export function SettingsPage() {
           <div className="flex flex-col gap-1.5"><span className="text-xs font-medium text-muted">{t('settings.language')}</span>
             <Segmented<Settings['language']> label={t('settings.language')} value={settings.language} onChange={(v) => void set('language', v)} options={[{ value: 'ru', label: 'Русский' }, { value: 'en', label: 'English' }]} /></div>
         </div>
+        <div className="mt-4 border-t border-line pt-3">
+          <Toggle
+            label={t('settings.pageTransitions')} description={t('settings.pageTransitionsHint')}
+            checked={settings.page_transitions} onChange={(v) => void set('page_transitions', v)}
+          />
+        </div>
       </Card>
 
       <Card title={t('settings.timer')} description={t('settings.timerHint')}>
