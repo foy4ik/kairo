@@ -17,6 +17,8 @@ enum K {
     Text,
     NullInt,
     NullText,
+    /// Text column added after backup version 1 shipped: may be absent in older files (imported as "").
+    OptText,
 }
 
 /// Tables in dependency order (parents first).
@@ -69,6 +71,7 @@ const TABLES: &[(&str, &[(&str, K)])] = &[
             ("project_id", K::NullInt),
             ("title", K::Text),
             ("content", K::Text),
+            ("folder", K::OptText),
             ("created_at", K::Text),
             ("updated_at", K::Text),
         ],
@@ -160,6 +163,7 @@ fn type_ok(v: &Value, k: K) -> bool {
         K::Text => v.is_string(),
         K::NullInt => v.is_null() || v.is_i64() || v.is_u64(),
         K::NullText => v.is_null() || v.is_string(),
+        K::OptText => v.is_string(),
     }
 }
 
@@ -188,6 +192,7 @@ pub fn validate_value(v: &Value) -> AppResult<BackupSummary> {
                 .ok_or_else(|| AppError::invalid_backup(format!("Table \"{name}\", row {}: not an object", i + 1)))?;
             for (col, kind) in *cols {
                 match obj.get(*col) {
+                    None if *kind == K::OptText => {}
                     Some(val) if type_ok(val, *kind) => {}
                     _ => {
                         return Err(AppError::invalid_backup(format!(
@@ -252,7 +257,13 @@ pub fn import_value(conn: &mut Connection, v: &Value) -> AppResult<BackupSummary
             let marks = (1..=cols.len()).map(|i| format!("?{i}")).collect::<Vec<_>>().join(", ");
             let mut stmt = tx.prepare(&format!("INSERT INTO {name} ({names}) VALUES ({marks})"))?;
             for row in tables[*name].as_array().into_iter().flatten() {
-                let vals: Vec<SqlValue> = cols.iter().map(|(c, _)| sql_value(&row[*c])).collect();
+                let vals: Vec<SqlValue> = cols
+                    .iter()
+                    .map(|(c, k)| match (&row[*c], k) {
+                        (Value::Null, K::OptText) => SqlValue::Text(String::new()),
+                        (v, _) => sql_value(v),
+                    })
+                    .collect();
                 stmt.execute(rusqlite::params_from_iter(vals)).map_err(|e| {
                     AppError::invalid_backup(format!("Table \"{name}\" contains data that cannot be imported: {e}"))
                 })?;

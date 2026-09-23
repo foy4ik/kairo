@@ -76,7 +76,7 @@ export function DashboardPage() {
         <div className="flex flex-wrap gap-2" role="group" aria-label={t('dashboard.quick')}>
           <Button variant="primary" onClick={() => ui().openNewTask()}><ListPlus size={15} />{t('dashboard.newTask')} <Kbd className="ml-1 border-white/30 bg-white/10 text-white">N</Kbd></Button>
           <Button onClick={() => nav('/focus')}><Timer size={15} />{t('dashboard.startFocus')}</Button>
-          <Button onClick={async () => { const n = await notesRepo.create({ title: t('note.untitled'), content: '', project_id: currentProject?.id ?? null, tags: [], task_ids: [] }); await useData.getState().refreshNotes(); nav(`/notes/${n.id}`) }}><FilePlus2 size={15} />{t('dashboard.newNote')}</Button>
+          <Button onClick={async () => { const n = await notesRepo.create({ title: t('note.untitled'), content: '', folder: '', project_id: currentProject?.id ?? null, tags: [], task_ids: [] }); await useData.getState().refreshNotes(); nav(`/notes/${n.id}`) }}><FilePlus2 size={15} />{t('dashboard.newNote')}</Button>
           <Button onClick={() => nav('/projects')}><FolderOpen size={15} />{t('dashboard.openProject')}</Button>
         </div>
       </header>

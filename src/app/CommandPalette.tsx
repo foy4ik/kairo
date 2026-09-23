@@ -62,7 +62,7 @@ export function CommandPalette() {
     if (mode === 'commands') {
       const cmds: Item[] = [
         { id: 'new-task', group: t('palette.actions'), label: t('palette.newTask'), hint: 'N', icon: <ListPlus size={16} />, run: () => { close(); useUi.getState().openNewTask({ projectId: projectMatch ? Number(projectMatch[1]) : undefined }) } },
-        { id: 'new-note', group: t('palette.actions'), label: t('palette.newNote'), icon: <FilePlus2 size={16} />, run: async () => { close(); const n = await attempt(() => notesRepo.create({ title: t('note.untitled'), content: '', project_id: projectMatch ? Number(projectMatch[1]) : null, tags: [], task_ids: [] })); if (n) { await useData.getState().refreshNotes(); nav(`/notes/${n.id}`) } } },
+        { id: 'new-note', group: t('palette.actions'), label: t('palette.newNote'), icon: <FilePlus2 size={16} />, run: async () => { close(); const n = await attempt(() => notesRepo.create({ title: t('note.untitled'), content: '', folder: '', project_id: projectMatch ? Number(projectMatch[1]) : null, tags: [], task_ids: [] })); if (n) { await useData.getState().refreshNotes(); nav(`/notes/${n.id}`) } } },
         { id: 'new-project', group: t('palette.actions'), label: t('palette.newProject'), icon: <FolderPlus size={16} />, run: () => { close(); useUi.getState().setProjectDialog({ mode: 'create' }) } },
         { id: 'focus', group: t('palette.actions'), label: t('palette.startFocus'), icon: <Timer size={16} />, run: go('/focus') },
         { id: 'search', group: t('palette.actions'), label: t('palette.search'), hint: 'Ctrl+P', icon: <Search size={16} />, run: () => useUi.getState().openPalette('search') },

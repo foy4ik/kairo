@@ -34,8 +34,8 @@ After the first install the app **updates itself**: it asks, then downloads a si
 | Area | Highlights |
 |---|---|
 | **Projects** | Statuses (active / paused / completed / archived), colour + icon, progress, per-project board / notes / files / focus history |
-| **Kanban** | Custom columns (rename, reorder, "done" column), drag & drop with persistent order, one-click sort by due date + priority (per column or the whole board) that still leaves manual reordering free afterwards, inline quick add (`Write docs #docs !high`), filters, side panel with checklist, tag suggestions scoped to the current project, deadline, linked notes and focus time |
-| **Notes** | Markdown editor with live preview, formatting toolbar, task-list toggling in the preview, tags, project + task links, full-text search, autosave with explicit *saved / saving / error* state |
+| **Kanban** | Custom columns (rename, reorder, "done" column), drag & drop with persistent order, one-click sort by due date + priority (per column or the whole board) that still leaves manual reordering free afterwards, inline quick add (`Write docs #docs !high`), filters (text, tag, deadline, priority, status/column), side panel with checklist, tag suggestions scoped to the current project, deadline, linked notes and focus time |
+| **Notes** | Markdown editor with live preview, formatting toolbar, task-list toggling in the preview, tags, folders, project + task links, full-text search, autosave with explicit *saved / saving / error* state |
 | **Focus** | Work / short / long break, standard durations and cycle length set in Settings, one-off override per run right on the Focus screen, bound to a task, runs in Rust (survives a hidden window), system tray countdown, native notification + chime |
 | **Analytics** | Day / week / custom period, completed tasks, sessions, focus time, per-project and per-tag breakdown, streak |
 | **Files** | Links to local files and folders (paths only), open in the system app / reveal in folder, clear "file moved" state |
@@ -92,9 +92,9 @@ scripts\tauri.ps1 build --bundles nsis     # sets PATH and CARGO_TARGET_DIR=C:\k
 ## Tests
 
 ```bash
-npm test                                   # Vitest (26): quick-add parser, markdown helpers, utils, i18n plurals + key parity
-npm run test:rust                          # Rust (25): repositories on in-memory SQLite, move_task, import/export round-trip, timer, analytics
-npm run e2e                                # Playwright (25): the scenarios below, incl. a WCAG audit and the auto-update flow
+npm test                                   # Vitest (43): quick-add parser, smart sort, date parsing, markdown helpers, utils, i18n plurals + key parity
+npm run test:rust                          # Rust (28): repositories on in-memory SQLite, move_task, import/export round-trip (also of pre-folder backups), timer, analytics
+npm run e2e                                # Playwright (41): the scenarios below, incl. a WCAG audit of every screen and the auto-update flow
 npm run smoke:native                       # real desktop build over WebView2/CDP: IPC, timer, DB, export/import (17 checks)
 node scripts/soak.mjs 15                   # 15-minute stability run of the desktop build: memory, DOM, listeners, console errors
 ```

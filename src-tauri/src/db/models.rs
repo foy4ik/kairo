@@ -71,6 +71,7 @@ pub struct Note {
     pub project_id: Option<i64>,
     pub title: String,
     pub content: String,
+    pub folder: String,
     pub created_at: String,
     pub updated_at: String,
     pub tags: Vec<Tag>,
@@ -173,6 +174,8 @@ pub struct NoteInput {
     pub title: String,
     #[serde(default)]
     pub content: String,
+    #[serde(default)]
+    pub folder: String,
     pub project_id: Option<i64>,
     #[serde(default)]
     pub tags: Vec<String>,

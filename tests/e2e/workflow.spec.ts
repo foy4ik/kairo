@@ -181,6 +181,20 @@ test.describe('Project → Task → Kanban', () => {
     await expect(page.getByTestId('task-card').filter({ hasText: 'Stay' })).toBeVisible()
   })
 
+  test('the status filter narrows the board to one column and can be cleared', async ({ page }) => {
+    await freshApp(page)
+    await createProject(page, 'Status filter')
+    await quickAddTask(page, 'Backlog task')
+    await quickAddTask(page, 'Working task', 1)
+    await expect(page.getByTestId('task-card')).toHaveCount(2)
+
+    await page.getByTestId('filter-status').selectOption({ label: 'В работе' })
+    await expect(page.getByTestId('task-card')).toHaveCount(1)
+    await expect(page.getByTestId('task-card')).toContainText('Working task')
+    await page.getByRole('button', { name: 'Сбросить' }).click()
+    await expect(page.getByTestId('task-card')).toHaveCount(2)
+  })
+
   test('sorting by due date and priority: per column from its menu, persists after reload', async ({ page }) => {
     await freshApp(page)
     await createProject(page, 'Sort test')

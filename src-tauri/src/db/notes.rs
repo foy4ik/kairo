@@ -5,7 +5,7 @@ use crate::error::{AppError, AppResult};
 use rusqlite::{params, Connection, Row};
 use std::collections::HashMap;
 
-const NOTE_COLS: &str = "id, project_id, title, content, created_at, updated_at";
+const NOTE_COLS: &str = "id, project_id, title, content, folder, created_at, updated_at";
 
 fn map_note(r: &Row) -> rusqlite::Result<Note> {
     Ok(Note {
@@ -13,8 +13,9 @@ fn map_note(r: &Row) -> rusqlite::Result<Note> {
         project_id: r.get(1)?,
         title: r.get(2)?,
         content: r.get(3)?,
-        created_at: r.get(4)?,
-        updated_at: r.get(5)?,
+        folder: r.get(4)?,
+        created_at: r.get(5)?,
+        updated_at: r.get(6)?,
         tags: vec![],
         task_ids: vec![],
     })
@@ -79,13 +80,23 @@ fn apply_links(conn: &Connection, id: i64, input: &NoteInput) -> AppResult<()> {
     Ok(())
 }
 
+/// Folder names are flat, trimmed and short; empty means "no folder".
+fn clean_folder(raw: &str) -> AppResult<String> {
+    let f = raw.trim();
+    if f.chars().count() > 60 {
+        return Err(AppError::validation("Folder name is too long (60 characters at most)"));
+    }
+    Ok(f.to_string())
+}
+
 pub fn create_note(conn: &mut Connection, input: NoteInput) -> AppResult<Note> {
     let title = require_text(&input.title, "Note title", 200)?;
+    let folder = clean_folder(&input.folder)?;
     let ts = now();
     let tx = conn.transaction()?;
     tx.execute(
-        "INSERT INTO notes (project_id, title, content, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?4)",
-        params![input.project_id, title, input.content, ts],
+        "INSERT INTO notes (project_id, title, content, folder, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?5)",
+        params![input.project_id, title, input.content, folder, ts],
     )?;
     let id = tx.last_insert_rowid();
     apply_links(&tx, id, &input)?;
@@ -97,10 +108,11 @@ pub fn create_note(conn: &mut Connection, input: NoteInput) -> AppResult<Note> {
 pub fn save_note(conn: &mut Connection, id: i64, input: NoteInput) -> AppResult<Note> {
     get_note(conn, id)?;
     let title = require_text(&input.title, "Note title", 200)?;
+    let folder = clean_folder(&input.folder)?;
     let tx = conn.transaction()?;
     tx.execute(
-        "UPDATE notes SET project_id = ?1, title = ?2, content = ?3, updated_at = ?4 WHERE id = ?5",
-        params![input.project_id, title, input.content, now(), id],
+        "UPDATE notes SET project_id = ?1, title = ?2, content = ?3, folder = ?4, updated_at = ?5 WHERE id = ?6",
+        params![input.project_id, title, input.content, folder, now(), id],
     )?;
     apply_links(&tx, id, &input)?;
     tx.commit()?;
@@ -123,7 +135,7 @@ pub fn search_notes(conn: &Connection, query: &str) -> AppResult<Vec<Note>> {
     let like = format!("%{}%", q.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_"));
     let mut stmt = conn.prepare(&format!(
         "SELECT {NOTE_COLS} FROM notes n
-         WHERE title LIKE ?1 ESCAPE '\\' OR content LIKE ?1 ESCAPE '\\'
+         WHERE title LIKE ?1 ESCAPE '\\' OR content LIKE ?1 ESCAPE '\\' OR folder LIKE ?1 ESCAPE '\\'
             OR EXISTS (SELECT 1 FROM note_tags nt JOIN tags g ON g.id = nt.tag_id WHERE nt.note_id = n.id AND g.name LIKE ?1 ESCAPE '\\')
          ORDER BY updated_at DESC LIMIT 200"
     ))?;

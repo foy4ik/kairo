@@ -90,6 +90,32 @@ test.describe('Notes', () => {
     await expect(page.getByText('Ничего не найдено').first()).toBeVisible()
   })
 
+  test('notes can be filed into folders: create one, filter by it, it survives a reload', async ({ page }) => {
+    await freshApp(page)
+    await page.goto('/#/notes')
+    await page.getByRole('button', { name: 'Новая заметка' }).first().click()
+    await page.getByLabel('Название заметки').fill('Filed note')
+    await page.getByTestId('note-folder').selectOption({ label: 'Новая папка…' })
+    await page.getByRole('textbox', { name: 'Папка' }).fill('  Specs ')
+    await page.getByRole('textbox', { name: 'Папка' }).press('Enter')
+    await expect(page.getByTestId('note-folder')).toHaveValue('Specs') // trimmed
+    await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
+
+    await page.getByRole('button', { name: 'Новая заметка' }).first().click()
+    await page.getByLabel('Название заметки').fill('Loose note')
+    await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
+    await expect(page.getByTestId('note-list').getByRole('button')).toHaveCount(2)
+
+    await page.getByTestId('note-folder-filter').selectOption('Specs')
+    await expect(page.getByTestId('note-list').getByRole('button')).toHaveCount(1)
+    await expect(page.getByTestId('note-list')).toContainText('Filed note')
+    await expect(page.getByTestId('note-list')).toContainText('Specs')
+
+    await page.reload()
+    await expect(page.getByTestId('note-folder-filter')).toBeVisible() // the folder is stored, not UI state
+    await expect(page.getByTestId('note-list').getByRole('button').filter({ hasText: 'Specs' })).toHaveCount(1)
+  })
+
   test('switching the open note animates its pane but never resets the search box', async ({ page }) => {
     await freshApp(page)
     await page.goto('/#/notes')

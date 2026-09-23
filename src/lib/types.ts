@@ -64,6 +64,8 @@ export interface Note {
   project_id: number | null
   title: string
   content: string
+  /** Flat folder name; empty when the note is not filed anywhere. */
+  folder: string
   created_at: string
   updated_at: string
   tags: Tag[]
@@ -174,6 +176,7 @@ export interface TaskPatch {
 export interface NoteInput {
   title: string
   content: string
+  folder: string
   project_id: number | null
   tags: string[]
   task_ids: number[]

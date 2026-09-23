@@ -140,7 +140,7 @@ fn notes_link_to_tasks_and_are_searchable() {
     let t = new_task(&mut c, &p, col, "Write docs");
     let n = notes::create_note(
         &mut c,
-        NoteInput { title: "Design".into(), content: "# Heading\nunique-needle 100%".into(), project_id: Some(p.id), tags: vec!["idea".into()], task_ids: vec![t.id, 9999] },
+        NoteInput { title: "Design".into(), content: "# Heading\nunique-needle 100%".into(), folder: "Specs".into(), project_id: Some(p.id), tags: vec!["idea".into()], task_ids: vec![t.id, 9999] },
     )
     .unwrap();
     assert_eq!(n.task_ids, [t.id], "unknown task ids are ignored");
@@ -149,13 +149,13 @@ fn notes_link_to_tasks_and_are_searchable() {
     assert_eq!(notes::search_notes(&c, "100%").unwrap().len(), 1, "LIKE wildcards are escaped");
     assert_eq!(notes::search_notes(&c, "%").unwrap().len(), 1);
     assert_eq!(notes::search_notes(&c, "IDEA").unwrap().len(), 1, "search matches tags");
-    let saved = notes::save_note(&mut c, n.id, NoteInput { title: "Design v2".into(), content: "changed".into(), project_id: None, tags: vec![], task_ids: vec![] }).unwrap();
+    let saved = notes::save_note(&mut c, n.id, NoteInput { title: "Design v2".into(), content: "changed".into(), folder: "Specs".into(), project_id: None, tags: vec![], task_ids: vec![] }).unwrap();
     assert!(saved.task_ids.is_empty() && saved.tags.is_empty() && saved.project_id.is_none());
     assert!(tasks::get_task(&c, t.id).unwrap().note_ids.is_empty());
     let hits = search::global_search(&c, "docs").unwrap();
     assert_eq!(hits.tasks.len(), 1);
     // Deleting a project keeps its notes.
-    let n2 = notes::create_note(&mut c, NoteInput { title: "Keep".into(), content: String::new(), project_id: Some(p.id), tags: vec![], task_ids: vec![] }).unwrap();
+    let n2 = notes::create_note(&mut c, NoteInput { title: "Keep".into(), content: String::new(), folder: String::new(), project_id: Some(p.id), tags: vec![], task_ids: vec![] }).unwrap();
     projects::delete_project(&c, p.id).unwrap();
     assert!(notes::get_note(&c, n2.id).unwrap().project_id.is_none());
     assert!(tasks::list_tasks(&c, None).unwrap().is_empty());
@@ -220,6 +220,37 @@ fn export_then_import_restores_everything() {
     // Import replaces, it does not merge.
     backup::import_value(&mut dst.lock().unwrap(), &exported).unwrap();
     assert_eq!(projects::list_projects(&dst.lock().unwrap()).unwrap().len(), 3);
+}
+
+#[test]
+fn note_folders_are_saved_trimmed_validated_and_survive_backups() {
+    let db = setup();
+    let mut c = db.lock().unwrap();
+    let n = notes::create_note(
+        &mut c,
+        NoteInput { title: "A".into(), content: "x".into(), folder: "  Specs  ".into(), project_id: None, tags: vec![], task_ids: vec![] },
+    )
+    .unwrap();
+    assert_eq!(n.folder, "Specs", "folder names are trimmed");
+    assert_eq!(notes::search_notes(&c, "specs").unwrap().len(), 1, "search matches the folder name");
+
+    let long = "f".repeat(61);
+    let err = notes::save_note(&mut c, n.id, NoteInput { title: "A".into(), content: "x".into(), folder: long, project_id: None, tags: vec![], task_ids: vec![] })
+        .expect_err("too long");
+    assert_eq!(err.code, "VALIDATION");
+    assert_eq!(notes::get_note(&c, n.id).unwrap().folder, "Specs", "a rejected save changes nothing");
+
+    // A backup made before folders existed has no "folder" key: it still imports, with "no folder".
+    let mut old = backup::export_value(&c).unwrap();
+    for row in old["tables"]["notes"].as_array_mut().unwrap() {
+        row.as_object_mut().unwrap().remove("folder");
+    }
+    drop(c);
+    let dst = setup();
+    backup::import_value(&mut dst.lock().unwrap(), &old).unwrap();
+    let imported = notes::list_notes(&dst.lock().unwrap(), None, None).unwrap();
+    assert_eq!(imported.len(), 1);
+    assert_eq!(imported[0].folder, "");
 }
 
 #[test]
@@ -309,6 +340,23 @@ fn migrations_are_idempotent() {
     kairo_lib::db::migrate(&c).unwrap();
     let v: i64 = c.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap();
     assert_eq!(v as usize, kairo_lib::db::schema_version());
+}
+
+#[test]
+fn a_database_from_before_note_folders_upgrades_in_place_and_keeps_its_notes() {
+    // What every existing install has: schema version 1 with real notes in it.
+    let conn = rusqlite::Connection::open_in_memory().unwrap();
+    kairo_lib::db::configure(&conn).unwrap();
+    conn.execute_batch(include_str!("../migrations/001_init.sql")).unwrap();
+    conn.pragma_update(None, "user_version", 1i64).unwrap();
+    conn.execute("INSERT INTO notes (title, content, created_at, updated_at) VALUES ('Old note', 'body', 't', 't')", []).unwrap();
+
+    kairo_lib::db::migrate(&conn).unwrap();
+
+    let v: i64 = conn.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap();
+    assert_eq!(v as usize, kairo_lib::db::schema_version());
+    let n = notes::list_notes(&conn, None, None).unwrap();
+    assert_eq!((n.len(), n[0].title.as_str(), n[0].content.as_str(), n[0].folder.as_str()), (1, "Old note", "body", ""));
 }
 
 #[test]

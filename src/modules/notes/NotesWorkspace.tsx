@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FilePlus2, FileText, Search } from 'lucide-react'
+import { FilePlus2, FileText, Folder, Search } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { Input, Select } from '@/components/Field'
 import { EmptyState } from '@/components/EmptyState'
@@ -32,6 +32,7 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
   const [hits, setHits] = useState<Note[] | null>(null)
   const [tag, setTag] = useState('')
   const [project, setProject] = useState<number | ''>('')
+  const [folder, setFolder] = useState('')
 
   // Full-text search runs in the backend (content, title, tags); the list itself comes from the cache.
   useEffect(() => {
@@ -48,9 +49,17 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
       if (projectId !== undefined && n.project_id !== projectId) return false
       if (project !== '' && n.project_id !== project) return false
       if (tag && !n.tags.some((x) => x.name === tag)) return false
+      if (folder && n.folder !== folder) return false
       return true
     })
-  }, [hits, notes, projectId, project, tag])
+  }, [hits, notes, projectId, project, tag, folder])
+
+  const folders = useMemo(
+    () => [...new Set(notes.filter((n) => projectId === undefined || n.project_id === projectId).map((n) => n.folder).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [notes, projectId],
+  )
+  // A folder that no longer has notes must not keep filtering the list to nothing.
+  useEffect(() => { if (folder && !folders.includes(folder)) setFolder('') }, [folder, folders])
 
   const allTags = useMemo(() => {
     const m = new Map<string, number>()
@@ -60,7 +69,7 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
 
   const selected = notes.find((n) => n.id === selectedId) ?? null
   const createNote = async () => {
-    const n = await attempt(() => notesRepo.create({ title: t('note.untitled'), content: '', project_id: projectId ?? (project === '' ? null : project), tags: [], task_ids: [] }))
+    const n = await attempt(() => notesRepo.create({ title: t('note.untitled'), content: '', folder: folder, project_id: projectId ?? (project === '' ? null : project), tags: [], task_ids: [] }))
     if (!n) return
     await useData.getState().refreshNotes()
     setQuery('')
@@ -84,6 +93,12 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
               {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </Select>
           )}
+          {folders.length > 0 && (
+            <Select aria-label={t('note.folder')} data-testid="note-folder-filter" value={folder} onChange={(e) => setFolder(e.target.value)}>
+              <option value="">{t('notes.allFolders')}</option>
+              {folders.map((f) => <option key={f} value={f}>{f}</option>)}
+            </Select>
+          )}
           {allTags.length > 0 && (
             <div className="flex flex-wrap gap-1" role="group" aria-label={t('task.tags')}>
               {allTags.slice(0, 8).map((g) => (
@@ -100,6 +115,7 @@ export function NotesWorkspace({ projectId, selectedId, onSelect }: Props) {
                 className={cn('flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors', n.id === selectedId ? 'bg-accent-soft' : 'hover:bg-surface-2')}
               >
                 <span className="truncate text-sm font-medium">{n.title}</span>
+                {n.folder && <span className="inline-flex items-center gap-1 text-[11px] text-muted"><Folder size={11} aria-hidden />{n.folder}</span>}
                 <span className="line-clamp-2 text-xs text-muted">{snippet(n.content) || t('note.empty')}</span>
                 <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted">
                   {formatRelative(lang, n.updated_at)}

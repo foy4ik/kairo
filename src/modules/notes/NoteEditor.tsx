@@ -19,23 +19,35 @@ import { applyFormat, type Format } from './markdownFormat'
 import { useAutosave } from './useAutosave'
 
 type View = 'edit' | 'split' | 'preview'
+const NEW_FOLDER = '__new-folder__'
 
 const toInput = (n: NoteInput): NoteInput => ({ ...n, tags: [...n.tags], task_ids: [...n.task_ids] })
-const serialize = (n: NoteInput) => JSON.stringify([n.title, n.content, n.project_id, n.tags, [...n.task_ids].sort()])
-const fromNote = (n: Note): NoteInput => ({ title: n.title, content: n.content, project_id: n.project_id, tags: n.tags.map((x) => x.name), task_ids: n.task_ids })
+const serialize = (n: NoteInput) => JSON.stringify([n.title, n.content, n.folder, n.project_id, n.tags, [...n.task_ids].sort()])
+const fromNote = (n: Note): NoteInput => ({ title: n.title, content: n.content, folder: n.folder, project_id: n.project_id, tags: n.tags.map((x) => x.name), task_ids: n.task_ids })
 
 /** Markdown editor with live preview and autosave. Mount with `key={note.id}` so drafts never leak between notes. */
 export function NoteEditor({ note, onDeleted }: { note: Note; onDeleted: () => void }) {
   const t = useT()
   const projects = useData((s) => s.projects)
   const allTasks = useData((s) => s.tasks)
+  const allNotes = useData((s) => s.notes)
   const initial = useMemo(() => fromNote(note), []) // eslint-disable-line react-hooks/exhaustive-deps
   const [form, setForm] = useState<NoteInput>(initial)
   const [view, setView] = useState<View>('split')
   const [tagInput, setTagInput] = useState('')
+  const [newFolder, setNewFolder] = useState<string | null>(null) // non-null while a new folder name is being typed
   const [confirmDelete, setConfirmDelete] = useState(false)
   const area = useRef<HTMLTextAreaElement>(null)
   const noteId = note.id
+  const folders = useMemo(
+    () => [...new Set([...allNotes.map((n) => n.folder), form.folder].filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [allNotes, form.folder],
+  )
+  const commitFolder = () => {
+    const v = (newFolder ?? '').trim()
+    setNewFolder(null)
+    if (v && v !== form.folder) change({ folder: v })
+  }
 
   const persist = useCallback(async (v: NoteInput) => {
     const before = useData.getState().notes.find((n) => n.id === noteId)
@@ -133,6 +145,22 @@ export function NoteEditor({ note, onDeleted }: { note: Note; onDeleted: () => v
             <option value="">{t('note.noProject')}</option>
             {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </Select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted">
+          {t('note.folder')}
+          {newFolder === null ? (
+            <Select value={form.folder} className="h-7 w-36" data-testid="note-folder" onChange={(e) => (e.target.value === NEW_FOLDER ? setNewFolder('') : change({ folder: e.target.value }))}>
+              <option value="">{t('note.noFolder')}</option>
+              {folders.map((f) => <option key={f} value={f}>{f}</option>)}
+              <option value={NEW_FOLDER}>{t('note.newFolder')}</option>
+            </Select>
+          ) : (
+            <Input
+              autoFocus aria-label={t('note.folder')} placeholder={t('note.folderName')} maxLength={60} className="h-7 w-36" value={newFolder}
+              onChange={(ev) => setNewFolder(ev.target.value)} onBlur={commitFolder}
+              onKeyDown={(ev) => { if (ev.key === 'Enter') { ev.preventDefault(); commitFolder() } else if (ev.key === 'Escape') { ev.stopPropagation(); setNewFolder(null) } }}
+            />
+          )}
         </label>
         <div className="flex flex-wrap items-center gap-1.5">
           {form.tags.map((g) => <TagChip key={g} tag={{ name: g, color: '#6366f1' }} onRemove={() => change({ tags: form.tags.filter((x) => x !== g) })} />)}

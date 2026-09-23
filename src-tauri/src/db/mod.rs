@@ -17,7 +17,10 @@ use rusqlite::Connection;
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard};
 
-const MIGRATIONS: &[(&str, &str)] = &[("001_init", include_str!("../../migrations/001_init.sql"))];
+const MIGRATIONS: &[(&str, &str)] = &[
+    ("001_init", include_str!("../../migrations/001_init.sql")),
+    ("002_note_folder", include_str!("../../migrations/002_note_folder.sql")),
+];
 
 /// Shared connection wrapped for Tauri managed state.
 pub struct Db(pub Mutex<Connection>);

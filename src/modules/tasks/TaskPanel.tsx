@@ -126,7 +126,7 @@ function TaskDetails({ task, onClose }: { task: Task; onClose: () => void }) {
   }
 
   const newLinkedNote = async () => {
-    const n = await attempt(() => notesRepo.create({ title: task.title, content: `# ${task.title}\n\n`, project_id: task.project_id, tags: [], task_ids: [task.id] }))
+    const n = await attempt(() => notesRepo.create({ title: task.title, content: `# ${task.title}\n\n`, folder: '', project_id: task.project_id, tags: [], task_ids: [task.id] }))
     if (!n) return
     await Promise.all([useData.getState().refreshNotes(), useData.getState().refreshTasks()])
     onClose()

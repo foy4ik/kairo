@@ -30,14 +30,15 @@ const collision: CollisionDetection = (args) => {
   const hits = pointerWithin(args)
   return hits.length ? hits : closestCorners(args)
 }
-interface Filters { text: string; tag: string; due: 'all' | 'overdue' | 'today' | 'week' | 'none'; priority: '' | Priority }
-const NO_FILTERS: Filters = { text: '', tag: '', due: 'all', priority: '' }
+interface Filters { text: string; tag: string; due: 'all' | 'overdue' | 'today' | 'week' | 'none'; priority: '' | Priority; column: number | '' }
+const NO_FILTERS: Filters = { text: '', tag: '', due: 'all', priority: '', column: '' }
 
 export function matchesFilters(task: Task, f: Filters, done: boolean): boolean {
   const q = f.text.trim().toLowerCase()
   if (q && !task.title.toLowerCase().includes(q) && !task.description.toLowerCase().includes(q) && !task.tags.some((x) => x.name.toLowerCase().includes(q))) return false
   if (f.tag && !task.tags.some((x) => x.name === f.tag)) return false
   if (f.priority && task.priority !== f.priority) return false
+  if (f.column !== '' && task.column_id !== f.column) return false // "status" of a task = the column it is in
   if (f.due !== 'all') {
     const s = dueState(task.due_at, done)
     if (f.due === 'none' && task.due_at) return false
@@ -221,6 +222,10 @@ export function Board({ projectId }: { projectId: number }) {
         <Select aria-label={t('task.tags')} className="w-36" value={filters.tag} onChange={(e) => set({ tag: e.target.value })}>
           <option value="">{t('filters.allTags')}</option>
           {tags.map((g) => <option key={g.id} value={g.name}>#{g.name}</option>)}
+        </Select>
+        <Select aria-label={t('filters.statusLabel')} data-testid="filter-status" className="w-40" value={filters.column} onChange={(e) => set({ column: e.target.value ? Number(e.target.value) : '' })}>
+          <option value="">{t('filters.anyStatus')}</option>
+          {columns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
         <Select aria-label={t('task.due')} className="w-40" value={filters.due} onChange={(e) => set({ due: e.target.value as Filters['due'] })}>
           <option value="all">{t('filters.anyDue')}</option>

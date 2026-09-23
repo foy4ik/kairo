@@ -94,6 +94,7 @@ function hydrateTask(t: DB['tasks'][number]): Task {
 function hydrateNote(n: DB['notes'][number]): Note {
   return {
     ...n,
+    folder: n.folder ?? '', // notes saved before folders existed
     tags: db.note_tags.filter((x) => x.note_id === n.id).map((x) => db.tags.find((g) => g.id === x.tag_id)!).filter(Boolean),
     task_ids: db.note_tasks.filter((x) => x.note_id === n.id).map((x) => x.task_id),
   }
@@ -250,8 +251,8 @@ function demo(lang: string) {
   handlers.add_subtask({ task_id: ids[2], title: tr('Логика таймера', 'Timer logic') })
   handlers.add_subtask({ task_id: ids[2], title: tr('Иконка в трее', 'Tray icon') })
   db.subtasks[0].completed = true
-  handlers.create_note({ input: { title: tr('Архитектура Kairo', 'Kairo architecture'), project_id: p1.id, tags: ['architecture'], task_ids: [ids[0], ids[2]], content: tr('# Архитектура\n\n1. **React UI**\n2. **Репозитории**\n3. **Rust** — источник истины\n\n> SQLite — источник истины, Zustand — кэш.\n\n- [x] Схема БД\n- [ ] Аналитика\n', '# Architecture\n\n1. **React UI**\n2. **Repositories**\n3. **Rust** — source of truth\n\n> SQLite is the source of truth, Zustand is a cache.\n\n- [x] Database schema\n- [ ] Analytics\n') } })
-  handlers.create_note({ input: { title: tr('Идеи для демо-ролика', 'Demo video ideas'), project_id: p1.id, tags: ['docs'], task_ids: [ids[4]], content: tr('# Сценарий\n\n1. Dashboard\n2. Новая задача клавишей `N`\n3. Фокус\n', '# Script\n\n1. Dashboard\n2. New task with the `N` key\n3. Focus\n') } })
+  handlers.create_note({ input: { title: tr('Архитектура Kairo', 'Kairo architecture'), folder: tr('Проект', 'Project'), project_id: p1.id, tags: ['architecture'], task_ids: [ids[0], ids[2]], content: tr('# Архитектура\n\n1. **React UI**\n2. **Репозитории**\n3. **Rust** — источник истины\n\n> SQLite — источник истины, Zustand — кэш.\n\n- [x] Схема БД\n- [ ] Аналитика\n', '# Architecture\n\n1. **React UI**\n2. **Repositories**\n3. **Rust** — source of truth\n\n> SQLite is the source of truth, Zustand is a cache.\n\n- [x] Database schema\n- [ ] Analytics\n') } })
+  handlers.create_note({ input: { title: tr('Идеи для демо-ролика', 'Demo video ideas'), folder: tr('Проект', 'Project'), project_id: p1.id, tags: ['docs'], task_ids: [ids[4]], content: tr('# Сценарий\n\n1. Dashboard\n2. Новая задача клавишей `N`\n3. Фокус\n', '# Script\n\n1. Dashboard\n2. New task with the `N` key\n3. Focus\n') } })
   const hist: Array<[number, number, number]> = [[9, 9, 0], [8, 10, 0], [6, 9, 1], [5, 14, 1], [4, 10, 1], [3, 15, 0], [2, 9, 2], [2, 10, 2], [1, 10, 2], [1, 11, 2], [0, 8, 2]]
   for (const [ago, hour, ti] of hist) {
     const d = addDays(new Date(), -ago); d.setHours(hour, 0, 0, 0)
@@ -424,13 +425,13 @@ const handlers: Record<string, (a: A) => unknown> = {
   get_notes: ({ project_id, limit }) => db.notes.filter((n) => project_id == null || n.project_id === project_id).sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, limit ?? 9999).map(hydrateNote),
   get_note: ({ id }) => hydrateNote(need(db.notes, id, 'Note')),
   create_note: ({ input }) => {
-    const n = { id: nid(), project_id: input.project_id ?? null, title: text(input.title, 'Note title', 200), content: input.content ?? '', created_at: now(), updated_at: now() }
+    const n = { id: nid(), project_id: input.project_id ?? null, title: text(input.title, 'Note title', 200), content: input.content ?? '', folder: folderName(input.folder), created_at: now(), updated_at: now() }
     db.notes.push(n)
     return applyNoteLinks(n.id, input)
   },
   save_note: ({ id, input }) => {
     const n = need(db.notes, id, 'Note')
-    n.title = text(input.title, 'Note title', 200); n.content = input.content ?? ''; n.project_id = input.project_id ?? null; n.updated_at = now()
+    n.title = text(input.title, 'Note title', 200); n.content = input.content ?? ''; n.folder = folderName(input.folder); n.project_id = input.project_id ?? null; n.updated_at = now()
     return applyNoteLinks(id, input)
   },
   delete_note: ({ id }) => {
@@ -442,7 +443,7 @@ const handlers: Record<string, (a: A) => unknown> = {
   },
   search_notes: ({ query }) => {
     const q = String(query).trim().toLowerCase()
-    return db.notes.map(hydrateNote).filter((n) => !q || n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q) || n.tags.some((t) => t.name.toLowerCase().includes(q))).sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+    return db.notes.map(hydrateNote).filter((n) => !q || n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q) || n.folder.toLowerCase().includes(q) || n.tags.some((t) => t.name.toLowerCase().includes(q))).sort((a, b) => b.updated_at.localeCompare(a.updated_at))
   },
   get_file_references: ({ project_id }): FileReference[] => db.files.filter((f) => f.project_id === project_id).map((f) => ({ ...f, exists: !f.path.includes('missing') })),
   add_file_reference: ({ project_id, path, label }) => {
@@ -528,6 +529,13 @@ const handlers: Record<string, (a: A) => unknown> = {
     persist()
     return { ...db.settings }
   },
+}
+
+/** Folder names are flat, trimmed and short; empty means "no folder" (same rule as the Rust backend). */
+function folderName(raw: unknown): string {
+  const f = String(raw ?? '').trim()
+  if (f.length > 60) throw err('VALIDATION', 'Folder name is too long (60 characters at most)')
+  return f
 }
 
 function applyNoteLinks(id: number, input: A): Note {
