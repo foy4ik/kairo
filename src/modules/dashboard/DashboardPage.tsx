@@ -147,7 +147,7 @@ export function DashboardPage() {
                   <button key={p.id} onClick={() => nav(`/projects/${p.id}`)} className="flex flex-col gap-2.5 rounded-xl border border-line bg-surface p-4 text-left shadow-card transition-colors hover:border-line-strong">
                     <div className="flex items-center gap-2.5"><ProjectIcon icon={p.icon} color={p.color} size={26} /><span className="truncate text-sm font-semibold">{p.name}</span></div>
                     <ProgressBar value={p.task_total ? p.task_done / p.task_total : 0} color={p.color} label={p.name} />
-                    <div className="flex justify-between text-xs text-muted"><span>{t('project.tasksDone', { a: p.task_done, b: p.task_total })}</span><span>{formatDuration(t, p.focus_sec)}</span></div>
+                    <div className="flex w-full justify-between gap-3 text-xs text-muted"><span>{t('project.tasksDone', { a: p.task_done, b: p.task_total })}</span><span>{formatDuration(t, p.focus_sec)}</span></div>
                   </button>
                 ))}
               </div>

@@ -57,7 +57,7 @@ export function ProjectsPage() {
           {shown.map((p) => (
             <button key={p.id} onClick={() => nav(`/projects/${p.id}`)} data-testid="project-card"
               className="group flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 text-left shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-line-strong">
-              <div className="flex items-start gap-3">
+              <div className="flex w-full items-start gap-3">
                 <ProjectIcon icon={p.icon} color={p.color} size={36} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[15px] font-semibold">{p.name}</div>
@@ -66,10 +66,12 @@ export function ProjectsPage() {
                 <StatusBadge status={p.status} />
               </div>
               <ProgressBar value={p.task_total ? p.task_done / p.task_total : 0} color={p.color} label={p.name} />
-              <div className="flex justify-between text-xs text-muted">
+              {/* Explicit width + grid columns: a card is a <button>, and some WebKit versions size its children to their text
+                  instead of stretching them, which glued these three labels together. */}
+              <div className="grid w-full grid-cols-[1fr_auto_1fr] gap-x-3 text-xs text-muted">
                 <span>{t('project.tasksDone', { a: p.task_done, b: p.task_total })}</span>
-                <span>{formatDuration(t, p.focus_sec)}</span>
-                <span>{formatRelative(lang, p.updated_at)}</span>
+                <span className="text-center">{formatDuration(t, p.focus_sec)}</span>
+                <span className="text-right">{formatRelative(lang, p.updated_at)}</span>
               </div>
             </button>
           ))}
