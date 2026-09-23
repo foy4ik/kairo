@@ -26,6 +26,7 @@ Installers for Windows (`.exe`), macOS (universal `.dmg` for Apple Silicon and I
 certificate, so the first launch shows a SmartScreen / Gatekeeper warning ("More info → Run anyway").
 On macOS, if the app is reported as "damaged", clear the download quarantine flag once: `xattr -cr /Applications/Kairo.app`,
 then open it with right-click → Open (or *System Settings → Privacy & Security → Open Anyway*).
+The macOS build needs **macOS 11 (Big Sur) or newer with Safari 16.4+** (the interface uses the system web engine); on an older system Kairo shows an explanation instead of a blank window.
 After the first install the app **updates itself**: it asks, then downloads a signature-verified package
 ([details](docs/RELEASING.md)).
 

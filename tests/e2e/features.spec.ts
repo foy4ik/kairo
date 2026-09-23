@@ -365,3 +365,21 @@ test.describe('Language, theme and command palette', () => {
     expect(overflow).toBe(false)
   })
 })
+
+test.describe('Web engine too old (e.g. Safari of an old macOS)', () => {
+  test.use({ locale: 'ru-RU' })
+
+  test('an explanation is shown instead of a blank window, and the app does not try to render', async ({ page }) => {
+    // What an engine without @property / color-mix looks like to the page.
+    await page.addInitScript(() => { Object.defineProperty(window.CSS, 'registerProperty', { value: undefined }) })
+    await page.goto('/')
+    await expect(page.getByRole('heading', { name: 'Kairo не может показать интерфейс' })).toBeVisible()
+    await expect(page.getByText('Safari до версии 16.4')).toBeVisible()
+    await expect(page.getByRole('navigation')).toHaveCount(0) // the app itself never mounted
+  })
+
+  test('a current engine is not affected: the app starts normally', async ({ page }) => {
+    await freshApp(page)
+    await expect(page.getByRole('heading', { name: 'Kairo не может показать интерфейс' })).toHaveCount(0)
+  })
+})

@@ -38,6 +38,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    },
     "shortDescription": "Local-first desktop workspace for projects, tasks, notes and focus",
     "windows": {
       "nsis": {
