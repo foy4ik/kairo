@@ -13,13 +13,9 @@
 
 The demo is the same interface running on an in-browser backend: everything you create stays in *your* browser (localStorage) and is never sent anywhere. Desktop-only features (tray, system notifications, opening local files, auto-update) need the installed app. On a phone the demo first shows screenshots and a video, because the UI is built for a wide window.
 
-<p align="center">
-  <video src="https://github.com/foy4ik/kairo/raw/main/docs/demo/kairo-demo.mp4" poster="https://foy4ik.github.io/kairo/demo/screenshots/02-board.png" controls muted playsinline width="100%">
-    Your browser does not play embedded video — <a href="https://foy4ik.github.io/kairo/demo/kairo-demo.mp4">open the demo video</a>.
-  </video>
-</p>
+[![Kairo in motion – click to open the full 70-second demo](docs/demo/kairo-demo-preview.gif)](https://foy4ik.github.io/kairo/demo/kairo-demo.mp4)
 
-▶ **[Watch the 70-second demo in a full-screen player](https://foy4ik.github.io/kairo/demo/kairo-demo.mp4)** — project → task by hotkey → drag & drop → checklist and project-scoped tag suggestions → one-click sort by due date + priority → status filter → notes with folders → focus with a one-off duration → analytics → command palette and theme → smooth page transitions (switchable) → auto-update.
+▶ **[Watch the full 70-second demo](https://foy4ik.github.io/kairo/demo/kairo-demo.mp4)** — project → task by hotkey → drag & drop → checklist and project-scoped tag suggestions → one-click sort by due date + priority → status filter → notes with folders → focus with a one-off duration → analytics → command palette and theme → smooth page transitions (switchable) → auto-update.
 
 | | |
 |---|---|
