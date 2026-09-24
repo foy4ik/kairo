@@ -54,21 +54,39 @@ try {
   await go(`#/projects/${launch.id}`)
   await page.getByTestId('task-card').filter({ hasText: 'фокус-таймер' }).click()
   await page.waitForTimeout(500)
+  // Tag suggestions come only from this project: typing "b" offers "backend".
+  await page.getByTestId('task-panel').getByRole('combobox', { name: 'Добавить тег' }).click()
+  await page.keyboard.type('b')
+  await page.waitForTimeout(500)
   await shot('02-board')
-  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape') // closes the suggestions first,
+  await page.keyboard.press('Escape') // then the panel
+  await page.waitForTimeout(300)
+  // The one-click sort and its explanation.
+  await page.getByRole('button', { name: 'Сортировать всё' }).click()
+  await page.getByRole('dialog', { name: 'Сортировать всё' }).waitFor()
+  await page.waitForTimeout(400)
+  await shot('10-sort-confirm')
+  await page.getByRole('button', { name: 'Отмена' }).click()
 
   await go('#/notes')
-  await page.getByTestId('note-list').getByRole('button').first().click()
+  await page.getByTestId('note-list').getByRole('button', { name: /Архитектура Kairo/ }).click()
   await page.waitForTimeout(500)
   await shot('03-notes')
 
-  // Focus screen with a running session bound to a task.
+  // Focus screen: a task chosen and a one-off duration / cycle set right on the start screen (Settings stay untouched).
   const tasks = await ipc('get_tasks', { project_id: null })
   const task = tasks.find((t) => t.title.includes('фокус-таймер')) ?? tasks.find((t) => !t.completed_at)
-  await ipc('start_timer', { kind: 'work', task_id: task.id, duration_sec: null })
-  await go('#/focus'); await page.waitForTimeout(1200)
+  await go('#/focus'); await page.waitForTimeout(700)
+  await page.getByTestId('focus-task-select').selectOption(String(task.id))
+  await page.getByTestId('focus-params-toggle').click()
+  await page.getByTestId('focus-duration-input').fill('50')
+  await page.getByTestId('focus-duration-input').press('Tab')
+  await page.getByTestId('focus-long-every-input').fill('6')
+  await page.getByTestId('focus-long-every-input').press('Tab')
+  await page.evaluate(() => (document.activeElement)?.blur?.())
+  await page.waitForTimeout(600)
   await shot('04-focus')
-  await ipc('stop_timer')
 
   await go('#/analytics'); await page.waitForTimeout(600); await shot('05-analytics')
 

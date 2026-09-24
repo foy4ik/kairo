@@ -22,7 +22,7 @@ The demo is the same interface running on an in-browser backend: everything you 
 | ![Board and task panel](docs/screenshots/02-board.png) | ![Markdown notes](docs/screenshots/03-notes.png) |
 | ![Focus timer](docs/screenshots/04-focus.png) | ![Analytics](docs/screenshots/05-analytics.png) |
 
-More: [command palette](docs/screenshots/09-command-palette.png) · [light theme](docs/screenshots/06-dashboard-light.png) · [light board](docs/screenshots/07-board-light.png) · [settings](docs/screenshots/08-settings.png). All screenshots are taken from the real desktop build. Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+More: [sort by due date + priority](docs/screenshots/10-sort-confirm.png) · [command palette](docs/screenshots/09-command-palette.png) · [light theme](docs/screenshots/06-dashboard-light.png) · [light board](docs/screenshots/07-board-light.png) · [settings](docs/screenshots/08-settings.png). All screenshots are taken from the real desktop build. Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
 
 ## Download
 
