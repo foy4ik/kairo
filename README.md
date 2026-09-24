@@ -17,12 +17,32 @@ The demo is the same interface running on an in-browser backend: everything you 
 
 ▶ **[Watch the full 70-second demo](https://foy4ik.github.io/kairo/demo/kairo-demo.mp4)** — project → task by hotkey → drag & drop → checklist and project-scoped tag suggestions → one-click sort by due date + priority → status filter → notes with folders → focus with a one-off duration → analytics → command palette and theme → smooth page transitions (switchable) → auto-update.
 
-| | |
-|---|---|
-| ![Board and task panel](docs/screenshots/02-board.png) | ![Markdown notes](docs/screenshots/03-notes.png) |
-| ![Focus timer](docs/screenshots/04-focus.png) | ![Analytics](docs/screenshots/05-analytics.png) |
+## Screenshots
 
-More: [sort by due date + priority](docs/screenshots/10-sort-confirm.png) · [command palette](docs/screenshots/09-command-palette.png) · [light theme](docs/screenshots/06-dashboard-light.png) · [light board](docs/screenshots/07-board-light.png) · [settings](docs/screenshots/08-settings.png). All screenshots are taken from the real desktop build. Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+Taken from the real desktop build (Rust backend, real SQLite, demo workspace). Click an image for full size. Case study: [docs/CASE_STUDY.md](docs/CASE_STUDY.md).
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><a href="docs/screenshots/01-dashboard.png"><img src="docs/screenshots/01-dashboard.png" alt="Dashboard" width="100%"></a><br><b>Dashboard</b><br><sub>today, project progress, focus, recent notes</sub></td>
+    <td width="50%" valign="top"><a href="docs/screenshots/02-board.png"><img src="docs/screenshots/02-board.png" alt="Board and task panel" width="100%"></a><br><b>Board and task panel</b><br><sub>checklist, deadline, tags with project-scoped suggestions</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><a href="docs/screenshots/10-sort-confirm.png"><img src="docs/screenshots/10-sort-confirm.png" alt="Sort by due date + priority" width="100%"></a><br><b>Sort by due date + priority</b><br><sub>one click, with an explanation first</sub></td>
+    <td width="50%" valign="top"><a href="docs/screenshots/03-notes.png"><img src="docs/screenshots/03-notes.png" alt="Notes" width="100%"></a><br><b>Notes</b><br><sub>Markdown with live preview, folders, tags, task links</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><a href="docs/screenshots/04-focus.png"><img src="docs/screenshots/04-focus.png" alt="Focus" width="100%"></a><br><b>Focus</b><br><sub>one-off duration and cycle right on the start screen</sub></td>
+    <td width="50%" valign="top"><a href="docs/screenshots/05-analytics.png"><img src="docs/screenshots/05-analytics.png" alt="Analytics" width="100%"></a><br><b>Analytics</b><br><sub>sessions, focus time, per-project and per-tag breakdown</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><a href="docs/screenshots/09-command-palette.png"><img src="docs/screenshots/09-command-palette.png" alt="Command palette" width="100%"></a><br><b>Command palette</b><br><sub>Ctrl+K: actions and global search</sub></td>
+    <td width="50%" valign="top"><a href="docs/screenshots/08-settings.png"><img src="docs/screenshots/08-settings.png" alt="Settings" width="100%"></a><br><b>Settings</b><br><sub>light theme, page transitions, timer, data</sub></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><a href="docs/screenshots/06-dashboard-light.png"><img src="docs/screenshots/06-dashboard-light.png" alt="Dashboard, light theme" width="100%"></a><br><b>Dashboard, light theme</b><br><sub>dark is designed separately, not inverted</sub></td>
+    <td width="50%" valign="top"><a href="docs/screenshots/07-board-light.png"><img src="docs/screenshots/07-board-light.png" alt="Board, light theme" width="100%"></a><br><b>Board, light theme</b><br><sub>drag &amp; drop with a persistent order</sub></td>
+  </tr>
+</table>
 
 ## Download
 
