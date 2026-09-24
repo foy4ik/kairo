@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Download Kairo</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root { --bg:#f5f5f7; --fg:#17181c; --muted:#5f6270; --card:#fff; --line:#e0e0e6; --accent:#4f46e5; color-scheme: light dark; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0e0f12; --fg:#e8e9ee; --muted:#9a9dac; --card:#16171b; --line:#2a2c34; --accent:#8b93ff; } }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:var(--bg); color:var(--fg);
+           font:16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    main { width:100%; max-width:520px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:28px; }
+    h1 { margin:0 0 6px; font-size:22px; }
+    p { margin:8px 0; color:var(--muted); }
+    a { color:var(--accent); }
+    .list { display:grid; gap:10px; margin:18px 0 6px; }
+    .btn { display:block; padding:12px 16px; border:1px solid var(--line); border-radius:10px; text-decoration:none; color:var(--fg); }
+    .btn b { display:block; } .btn span { color:var(--muted); font-size:14px; }
+    .btn.rec { border-color:var(--accent); }
+    small { color:var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <h1 id="title">Kairo</h1>
+  <p id="status">…</p>
+  <div id="list" class="list" hidden></div>
+  <p><small id="note"></small></p>
+  <p><small><a id="all" href="https://github.com/foy4ik/kairo/releases/latest">All downloads on GitHub</a></small></p>
+</main>
+<script>
+/* Finds the newest GitHub release and starts the download of the file for the requested system, so the links in the
+   README keep working after every release even though the file names contain the version number.
+   download.html?os=windows | macos | linux-appimage | linux-deb  — starts the download.
+   download.html                                                  — shows the four choices. */
+(function () {
+  var API = 'https://api.github.com/repos/foy4ik/kairo/releases/latest'
+  var RELEASES = 'https://github.com/foy4ik/kairo/releases/latest'
+  var ru = /^ru/i.test(navigator.language || '')
+  var T = ru ? {
+    title: 'Скачать Kairo', looking: 'Ищу последнюю версию…', starting: function (v, n) { return 'Скачивание Kairo ' + v + ' (' + n + ') началось.' },
+    manual: 'Если загрузка не началась, нажмите сюда', pick: function (v) { return 'Последняя версия: ' + v + '. Выберите систему:' },
+    fail: 'Не удалось получить список файлов автоматически. Откройте страницу релизов и выберите файл вручную.',
+    all: 'Все файлы на GitHub',
+    note: 'Установщики не подписаны платным сертификатом, поэтому Windows и macOS при первом запуске покажут предупреждение — это ожидаемо. macOS: нужна версия 11 или новее.'
+  } : {
+    title: 'Download Kairo', looking: 'Looking for the latest version…', starting: function (v, n) { return 'Downloading Kairo ' + v + ' (' + n + ') has started.' },
+    manual: 'If the download did not start, click here', pick: function (v) { return 'Latest version: ' + v + '. Pick your system:' },
+    fail: 'Could not read the file list automatically. Open the releases page and pick a file by hand.',
+    all: 'All downloads on GitHub',
+    note: 'The installers are not signed with a paid certificate, so Windows and macOS show a warning on first launch — that is expected. macOS needs version 11 or newer.'
+  }
+  var TARGETS = {
+    'windows':        { name: 'Windows',          hint: ru ? 'Установщик .exe · Windows 10/11' : 'Installer .exe · Windows 10/11', re: /_x64-setup\.exe$/i },
+    'macos':          { name: 'macOS',            hint: ru ? '.dmg · Apple Silicon и Intel · macOS 11+' : '.dmg · Apple Silicon and Intel · macOS 11+', re: /_universal\.dmg$/i },
+    'linux-appimage': { name: 'Linux AppImage',   hint: ru ? 'Любой дистрибутив · обновляется сам' : 'Any distribution · updates itself', re: /\.AppImage$/i },
+    'linux-deb':      { name: 'Linux .deb',       hint: ru ? 'Debian / Ubuntu · обновлять вручную' : 'Debian / Ubuntu · update by hand', re: /\.deb$/i }
+  }
+  var $ = function (id) { return document.getElementById(id) }
+  document.documentElement.lang = ru ? 'ru' : 'en'
+  $('title').textContent = T.title
+  $('note').textContent = T.note
+  $('all').textContent = T.all
+  $('status').textContent = T.looking
+
+  var wanted = new URLSearchParams(location.search).get('os')
+  var guess = /Win/i.test(navigator.platform) ? 'windows' : /Mac/i.test(navigator.platform) ? 'macos' : /Linux|X11/i.test(navigator.platform) ? 'linux-appimage' : ''
+
+  function find(release, key) {
+    var assets = release.assets || []
+    for (var i = 0; i < assets.length; i++) if (TARGETS[key].re.test(assets[i].name)) return assets[i]
+    return null
+  }
+  function fail() { $('status').innerHTML = ''; var a = document.createElement('a'); a.href = RELEASES; a.textContent = T.fail; $('status').appendChild(a) }
+
+  fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
+    .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json() })
+    .then(function (release) {
+      var version = release.tag_name
+      if (wanted && TARGETS[wanted]) {
+        var asset = find(release, wanted)
+        if (!asset) return fail()
+        $('status').textContent = T.starting(version, TARGETS[wanted].name) + ' '
+        var again = document.createElement('a'); again.href = asset.browser_download_url; again.textContent = T.manual
+        $('status').appendChild(again)
+        location.assign(asset.browser_download_url)
+        return
+      }
+      $('status').textContent = T.pick(version)
+      var list = $('list'); list.hidden = false
+      Object.keys(TARGETS).forEach(function (key) {
+        var asset = find(release, key); if (!asset) return
+        var a = document.createElement('a'); a.className = 'btn' + (key === guess ? ' rec' : ''); a.href = asset.browser_download_url
+        a.innerHTML = '<b></b><span></span>'; a.firstChild.textContent = TARGETS[key].name; a.lastChild.textContent = TARGETS[key].hint
+        list.appendChild(a)
+      })
+    })
+    .catch(fail)
+}())
+</script>
+</body>
+</html>

@@ -46,8 +46,20 @@ Taken from the real desktop build (Rust backend, real SQLite, demo workspace). C
 
 ## Download
 
-Installers for Windows (`.exe`), macOS (universal `.dmg` for Apple Silicon and Intel) and Linux (`.AppImage`, `.deb`) are attached to every
-[GitHub release](https://github.com/foy4ik/kairo/releases/latest). They are not code-signed with a paid Microsoft/Apple
+One click starts the download of the newest version (the buttons always point at the latest release):
+
+<table>
+  <tr>
+    <td align="center" valign="top"><a href="https://foy4ik.github.io/kairo/download.html?os=windows"><img src="https://img.shields.io/badge/-Windows-0078D4?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc%2BPHBhdGggZmlsbD0nd2hpdGUnIGQ9J00yIDMuNCAxMC4yIDIuMnY4LjJIMnpNMTEuMiAyLjA1IDIyIC41djkuOUgxMS4yek0yIDExLjRoOC4ydjguMkwyIDE4LjV6TTExLjIgMTEuNEgyMnYxMC4xbC0xMC44LTEuNXonLz48L3N2Zz4%3D&logoColor=white&style=for-the-badge" alt="Download for Windows"></a><br><sub>Windows 10/11<br>installer (.exe)</sub></td>
+    <td align="center" valign="top"><a href="https://foy4ik.github.io/kairo/download.html?os=macos"><img src="https://img.shields.io/badge/-macOS-1D1D1F?logo=apple&logoColor=white&style=for-the-badge" alt="Download for macOS"></a><br><sub>macOS 11+<br>Apple Silicon and Intel (.dmg)</sub></td>
+    <td align="center" valign="top"><a href="https://foy4ik.github.io/kairo/download.html?os=linux-appimage"><img src="https://img.shields.io/badge/-Linux%20%C2%B7%20AppImage-3B3B3B?logo=linux&logoColor=white&style=for-the-badge" alt="Download for Linux AppImage"></a><br><sub>any distribution<br>updates itself</sub></td>
+    <td align="center" valign="top"><a href="https://foy4ik.github.io/kairo/download.html?os=linux-deb"><img src="https://img.shields.io/badge/-Linux%20%C2%B7%20.deb-A81D33?logo=debian&logoColor=white&style=for-the-badge" alt="Download for Linux .deb"></a><br><sub>Debian / Ubuntu<br>update by hand</sub></td>
+  </tr>
+</table>
+
+[Other files and older versions](https://github.com/foy4ik/kairo/releases)
+
+The installers are attached to every [GitHub release](https://github.com/foy4ik/kairo/releases/latest). They are not code-signed with a paid Microsoft/Apple
 certificate, so the first launch shows a SmartScreen / Gatekeeper warning ("More info → Run anyway").
 On macOS, if the app is reported as "damaged", clear the download quarantine flag once: `xattr -cr /Applications/Kairo.app`,
 then open it with right-click → Open (or *System Settings → Privacy & Security → Open Anyway*).

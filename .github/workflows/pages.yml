@@ -29,11 +29,12 @@ jobs:
       - run: npm ci
       - run: npm run build
         env: { VITE_WEB_DEMO: '1' }
-      - name: Demo media for the phone screen (screenshots and video)
+      - name: Demo media for the phone screen (screenshots and video) and the download page
         run: |
           mkdir -p dist/demo
           cp -r docs/screenshots dist/demo/screenshots
           cp docs/demo/kairo-demo.mp4 dist/demo/kairo-demo.mp4
+          cp docs/site/download.html dist/download.html
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
       - id: deployment

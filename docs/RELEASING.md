@@ -70,3 +70,10 @@ It has nothing to do with the signed desktop release flow above. Local check:
 ```bash
 VITE_WEB_DEMO=1 npm run build        # then serve dist/ from a sub-folder, e.g. .../kairo/
 ```
+
+## Download buttons in the README
+
+The buttons link to `https://foy4ik.github.io/kairo/download.html?os=windows|macos|linux-appimage|linux-deb`
+(source: `docs/site/download.html`, copied to the site by the Pages workflow). The page asks the GitHub API for the newest
+release and starts the download of the matching asset, so nothing has to be edited per release. It finds the files by
+name (`*_x64-setup.exe`, `*_universal.dmg`, `*.AppImage`, `*.deb`): if the bundle names ever change, update the patterns there.
