@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { createProject, freshApp, quickAddTask } from './helpers'
+import { createProject, freshApp, newNote, quickAddTask } from './helpers'
 import { readFileSync } from 'node:fs'
 
 test.describe('Onboarding and demo workspace', () => {
@@ -79,8 +79,7 @@ test.describe('Notes', () => {
     await freshApp(page)
     await page.goto('/#/notes')
     for (const [title, body] of [['Alpha', 'needle in a haystack'], ['Beta', 'nothing here']]) {
-      await page.getByRole('button', { name: 'Новая заметка' }).first().click()
-      await page.getByLabel('Название заметки').fill(title)
+      await newNote(page, title)
       await page.getByLabel('Текст заметки').fill(body)
       await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
     }
@@ -93,16 +92,14 @@ test.describe('Notes', () => {
   test('notes can be filed into folders: create one, filter by it, it survives a reload', async ({ page }) => {
     await freshApp(page)
     await page.goto('/#/notes')
-    await page.getByRole('button', { name: 'Новая заметка' }).first().click()
-    await page.getByLabel('Название заметки').fill('Filed note')
+    await newNote(page, 'Filed note')
     await page.getByTestId('note-folder').selectOption({ label: 'Новая папка…' })
     await page.getByRole('textbox', { name: 'Папка' }).fill('  Specs ')
     await page.getByRole('textbox', { name: 'Папка' }).press('Enter')
     await expect(page.getByTestId('note-folder')).toHaveValue('Specs') // trimmed
     await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
 
-    await page.getByRole('button', { name: 'Новая заметка' }).first().click()
-    await page.getByLabel('Название заметки').fill('Loose note')
+    await newNote(page, 'Loose note')
     await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
     await expect(page.getByTestId('note-list').getByRole('button')).toHaveCount(2)
 
@@ -120,8 +117,7 @@ test.describe('Notes', () => {
     await freshApp(page)
     await page.goto('/#/notes')
     for (const [title, body] of [['Alpha', 'shared marker text'], ['Beta', 'shared marker text']]) {
-      await page.getByRole('button', { name: 'Новая заметка' }).first().click()
-      await page.getByLabel('Название заметки').fill(title)
+      await newNote(page, title)
       await page.getByLabel('Текст заметки').fill(body)
       await expect(page.getByTestId('save-indicator')).toHaveAttribute('data-state', 'saved')
     }
@@ -150,6 +146,7 @@ test.describe('Focus and analytics', () => {
     await page.getByRole('link', { name: 'Фокус' }).click()
     await page.getByTestId('focus-task-select').selectOption({ label: 'Deep work' })
     await page.getByRole('button', { name: /^Старт/ }).click()
+    await expect(page.getByRole('button', { name: 'Пауза Space' })).toBeVisible() // running: the idle screen shows the same 25:00
     await expect(page.getByTestId('timer-display')).toHaveText('25:00')
     await page.clock.fastForward(60_000)
     await expect(page.getByTestId('timer-display')).toHaveText('24:00')
@@ -185,6 +182,7 @@ test.describe('Focus and analytics', () => {
     await expect(page.getByText('до длинного перерыва: 2')).toBeVisible()
 
     await page.getByRole('button', { name: /^Старт/ }).click()
+    await expect(page.getByRole('button', { name: 'Пауза Space' })).toBeVisible() // running: the idle screen shows the same 25:00
     await expect(page.getByTestId('timer-display')).toHaveText('50:00')
     await page.clock.fastForward(50 * 60_000 + 1000)
     await expect(page.getByText('Сессия завершена').first()).toBeVisible()
@@ -202,6 +200,7 @@ test.describe('Focus and analytics', () => {
     await freshApp(page)
     await page.goto('/#/focus')
     await page.getByRole('button', { name: /^Старт/ }).click()
+    await expect(page.getByRole('button', { name: 'Пауза Space' })).toBeVisible() // running: the idle screen shows the same 25:00
     await page.clock.fastForward(20_000)
     await page.getByRole('button', { name: 'Стоп' }).click()
     await expect(page.getByText('Сессий сегодня нет')).toBeVisible()

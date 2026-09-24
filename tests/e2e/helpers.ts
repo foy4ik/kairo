@@ -51,3 +51,11 @@ export async function dragTo(page: Page, source: ReturnType<Page['locator']>, ta
   // Let the drop animation and the save finish, as a person would before grabbing the next card.
   await page.waitForTimeout(400)
 }
+
+/** Creates a note from the notes list and waits until that new (untitled) note is the one open in the editor, so typing
+ *  can never land in the previously open note. Returns after the title is set. */
+export async function newNote(page: Page, title: string) {
+  await page.getByRole('button', { name: /^(Новая заметка|New note)$/ }).first().click()
+  await expect(page.getByLabel(/^(Название заметки|Note title)$/)).toHaveValue(/^(Без названия|Untitled)$/)
+  await page.getByLabel(/^(Название заметки|Note title)$/).fill(title)
+}

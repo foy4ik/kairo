@@ -42,13 +42,15 @@ export function CommandPalette() {
     const q = query.trim()
     if (!mode || !q) { setResults(EMPTY); setSearching(false); return }
     setSearching(true)
+    let stale = false // a search that finishes after the query changed must not overwrite newer results
     const run = debounce(async () => {
       const [r, n] = await Promise.all([attempt(() => tasksRepo.search(q)), attempt(() => notesRepo.search(q))])
+      if (stale) return
       setResults({ ...(r ?? EMPTY), notes: (n ?? r?.notes ?? []).slice(0, 8) })
       setSearching(false)
     }, 120)
     run()
-    return () => run.cancel()
+    return () => { stale = true; run.cancel() }
   }, [query, mode])
 
   const go = (path: string) => () => { close(); nav(path) }
