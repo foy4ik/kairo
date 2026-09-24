@@ -28,7 +28,7 @@ interface DB {
 
 const STORE_KEY = 'kairo-mock-db-v1'
 const DEFAULT_SETTINGS: Settings = {
-  language: 'ru', theme: 'system', work_min: 25, short_break_min: 5, long_break_min: 15,
+  language: typeof navigator !== 'undefined' && /^ru/i.test(navigator.language) ? 'ru' : 'en', theme: 'system', work_min: 25, short_break_min: 5, long_break_min: 15,
   long_break_every: 4, notifications: true, sound: true, auto_update: true, page_transitions: true, onboarded: false,
 }
 const empty = (): DB => ({

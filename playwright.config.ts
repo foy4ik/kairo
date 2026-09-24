@@ -17,10 +17,19 @@ export default defineConfig({
     locale: 'ru-RU',
     trace: 'retain-on-failure',
   },
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:1420',
-    reuseExistingServer: true,
-    timeout: 60_000,
-  },
+  // The web-demo spec runs against a second dev server started with the demo flag (banner, phone notice, no updater card).
+  projects: [
+    { name: 'app', testIgnore: /demo\.spec\.ts/ },
+    { name: 'demo', testMatch: /demo\.spec\.ts/, use: { baseURL: 'http://127.0.0.1:1421' } },
+  ],
+  webServer: [
+    { command: 'npm run dev', url: 'http://127.0.0.1:1420', reuseExistingServer: true, timeout: 60_000 },
+    {
+      command: 'npx vite --host 127.0.0.1 --port 1421 --strictPort',
+      url: 'http://127.0.0.1:1421',
+      env: { VITE_WEB_DEMO: '1' },
+      reuseExistingServer: true,
+      timeout: 60_000,
+    },
+  ],
 })

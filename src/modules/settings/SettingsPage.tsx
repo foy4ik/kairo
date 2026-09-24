@@ -13,6 +13,7 @@ import { pickBackupFile, pickSavePath } from '@/lib/native'
 import { attempt, errorMessage } from '@/lib/errors'
 import { playChime } from '@/lib/sound'
 import { toast } from '@/store/toast'
+import { WEB_DEMO } from '@/lib/demo'
 import { dayKey } from '@/lib/utils'
 import type { AppInfo, BackupSummary, Settings } from '@/lib/types'
 
@@ -162,7 +163,7 @@ export function SettingsPage() {
         <Button size="sm" className="mt-2" onClick={playChime}><Volume2 size={14} />{t('settings.testSound')}</Button>
       </Card>
 
-      <UpdatesCard version={info?.version} t={t} />
+      {!WEB_DEMO && <UpdatesCard version={info?.version} t={t} />}
 
       <Card title={t('settings.data')} description={t('settings.dataHint')}>
         <div className="mb-4 flex items-start gap-2 rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn" role="note">

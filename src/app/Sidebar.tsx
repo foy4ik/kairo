@@ -33,7 +33,7 @@ export function Sidebar() {
   return (
     <aside className="flex w-[228px] shrink-0 flex-col border-r border-line bg-surface" aria-label={t('nav.main')}>
       <div className="flex items-center gap-2.5 px-4 pb-2 pt-4">
-        <img src="/icon.png" alt="" width={26} height={26} className="rounded-md" draggable={false} />
+        <img src={`${import.meta.env.BASE_URL}icon.png`} alt="" width={26} height={26} className="rounded-md" draggable={false} />
         <span className="text-[15px] font-semibold tracking-tight">Kairo</span>
       </div>
 

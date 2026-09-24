@@ -24,6 +24,9 @@ import { useData } from '@/store/data'
 import { useTimer } from '@/store/timer'
 import { useUpdater } from '@/store/updater'
 import { UpdateDialog } from './UpdateDialog'
+import { DemoBanner } from './DemoBanner'
+import { MobileNotice } from './MobileNotice'
+import { WEB_DEMO } from '@/lib/demo'
 import { listen, isTauri } from '@/lib/ipc'
 import { useT } from '@/i18n'
 import { toast } from '@/store/toast'
@@ -79,16 +82,21 @@ function Shell() {
   // (see NotesWorkspace), so switching notes never resets what you typed into the search box.
   const section = loc.pathname.startsWith('/notes') ? '/notes' : loc.pathname
 
+  const layout = (
+    <div className={WEB_DEMO ? 'flex min-h-0 flex-1' : 'flex h-full'}>
+      <Sidebar />
+      <main className="min-w-0 flex-1 overflow-hidden" id="main">
+        <ErrorBoundary resetKey={loc.pathname}>
+          {pageTransitions ? <div key={section} className="h-full animate-page-in">{routes}</div> : routes}
+        </ErrorBoundary>
+      </main>
+    </div>
+  )
+
   return (
     <>
-      <div className="flex h-full">
-        <Sidebar />
-        <main className="min-w-0 flex-1 overflow-hidden" id="main">
-          <ErrorBoundary resetKey={loc.pathname}>
-            {pageTransitions ? <div key={section} className="h-full animate-page-in">{routes}</div> : routes}
-          </ErrorBoundary>
-        </main>
-      </div>
+      {WEB_DEMO ? <div className="flex h-full flex-col"><DemoBanner />{layout}</div> : layout}
+      {WEB_DEMO && <MobileNotice />}
       <TaskPanel />
       <NewTaskDialog />
       <ProjectDialog />

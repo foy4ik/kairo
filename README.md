@@ -2,11 +2,16 @@
 
 [![CI](https://github.com/foy4ik/kairo/actions/workflows/ci.yml/badge.svg)](https://github.com/foy4ik/kairo/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/foy4ik/kairo)](https://github.com/foy4ik/kairo/releases/latest)
+[![Live demo](https://img.shields.io/badge/live%20demo-open-4f46e5)](https://foy4ik.github.io/kairo/)
 
 **Local-first desktop workspace for projects, tasks, notes and focus.**
 `Plan → Focus → Work → Capture → Review` in one offline app: no account, no server, your data stays in a local SQLite file.
 
 > Tauri 2 · Rust · SQLite · React 18 · TypeScript · Tailwind · Zustand · dnd-kit · Recharts
+
+### ▶ [Try the live demo in your browser](https://foy4ik.github.io/kairo/) — no install, no account
+
+The demo is the same interface running on an in-browser backend: everything you create stays in *your* browser (localStorage) and is never sent anywhere. Desktop-only features (tray, system notifications, opening local files, auto-update) need the installed app. On a phone the demo first shows screenshots and a video, because the UI is built for a wide window.
 
 [![Kairo dashboard – click to watch the 50-second demo](docs/screenshots/01-dashboard.png)](docs/demo/kairo-demo.mp4)
 

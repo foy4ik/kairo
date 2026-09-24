@@ -58,3 +58,15 @@ then put the public key (`.key.pub`) into `plugins.updater.pubkey` in `tauri.con
   (install manually).
 * Installers are not code-signed with a Microsoft/Apple certificate, so first installs show a SmartScreen / Gatekeeper
   warning. That does not affect the update signature check described above.
+
+## Web demo (GitHub Pages)
+
+`.github/workflows/pages.yml` publishes the app to https://foy4ik.github.io/kairo/ on every push to `main`. It is the normal
+frontend built with `VITE_WEB_DEMO=1`, which switches on the demo banner, the phone screen and hides the updater card; the
+backend is the in-browser one (`src/lib/ipc/mock.ts`), so each visitor's data stays in their own browser. The screenshots and the
+video used on the phone screen are copied from `docs/` during the workflow, so refreshing them there updates the site too.
+It has nothing to do with the signed desktop release flow above. Local check:
+
+```bash
+VITE_WEB_DEMO=1 npm run build        # then serve dist/ from a sub-folder, e.g. .../kairo/
+```

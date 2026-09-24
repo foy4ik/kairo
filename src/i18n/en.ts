@@ -325,6 +325,20 @@ export const en: Record<keyof typeof ru, string> = {
   'search.noResults': 'No results',
   'search.noResultsFor': 'Nothing found for "{q}". Check the spelling or try another word.',
 
+  // web demo
+  'demo.banner': 'Browser demo: your data stays in this browser and is never sent anywhere.',
+  'demo.narrow': 'Best viewed on a computer.',
+  'demo.download': 'Get the desktop app',
+  'demo.dismiss': 'Dismiss',
+  'demo.mobileTitle': 'Kairo is best viewed on a computer',
+  'demo.mobileText': 'This is a desktop app: the interface is designed for a wide screen. Here is how it looks. You can still open the live demo on a phone, but it will be cramped.',
+  'demo.mobileOpen': 'Open the demo anyway',
+  'demo.video': 'Kairo demo video',
+  'demo.shot.board': 'Task board',
+  'demo.shot.notes': 'Notes',
+  'demo.shot.focus': 'Focus timer',
+  'demo.shot.analytics': 'Analytics',
+
   // settings
   'settings.appearance': 'Appearance',
   'settings.theme': 'Theme',

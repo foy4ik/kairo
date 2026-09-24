@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 export default defineConfig({
+  // The web demo lives under a sub-path (github.io/kairo/), so assets must be relative; the desktop build keeps '/'.
+  base: process.env.VITE_WEB_DEMO === '1' ? './' : '/',
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
   clearScreen: false,
